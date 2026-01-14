@@ -51,7 +51,7 @@ The build pipeline has 4 stages:
 ## Project Structure
 
 ```
-vuers/
+libvue_compiler_sfc/
 ├── src/                    # Rust source
 │   └── lib.rs              # Public API
 ├── examples/               # Example programs

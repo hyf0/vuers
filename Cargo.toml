@@ -1,10 +1,10 @@
 [package]
-name = "rusty-vue"
+name = "libvue_compiler_sfc"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "rusty_vue"
+name = "libvue_compiler_sfc"
 path = "src/lib.rs"
 
 [dependencies]

@@ -1,4 +1,4 @@
-use rusty_vue::compile_template;
+use libvue_compiler_sfc::compile_template;
 
 fn main() {
     let template = r#"<div class="container">

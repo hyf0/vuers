@@ -1,4 +1,4 @@
-# vuers
+# libvue_compiler_sfc
 
 Compile the Vue template compiler (@vue/compiler-dom) to native code using Static Hermes, making it callable from Rust without a JavaScript runtime.
 
@@ -28,7 +28,7 @@ cargo install just
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd rusty-vue
+cd libvue_compiler_sfc
 
 # Set up everything (install deps, build Hermes)
 just setup
@@ -66,7 +66,7 @@ See [CLAUDE.md](./CLAUDE.md) for detailed architecture documentation.
 ## API
 
 ```rust
-use rusty_vue::compile_template;
+use libvue_compiler_sfc::compile_template;
 
 fn main() {
     let code = compile_template("<div>{{ msg }}</div>").unwrap();
