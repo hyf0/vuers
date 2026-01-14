@@ -1,0 +1,18 @@
+[package]
+name = "rusty-vue"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "rusty_vue"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rusty-vue"
+path = "src/main.rs"
+
+[dependencies]
+serde_json = "1.0"
+
+[build-dependencies]
+cc = "1.0"
