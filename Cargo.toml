@@ -8,7 +8,16 @@ name = "libvue_compiler_sfc"
 path = "src/lib.rs"
 
 [dependencies]
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 [build-dependencies]
 cc = "1.0"
+
+[[example]]
+name = "compile_sfc"
+path = "examples/compile_sfc.rs"
+
+[[example]]
+name = "demo"
+path = "examples/demo.rs"

@@ -12,11 +12,11 @@ fn main() {
     println!("------");
     println!("{}\n", template);
 
-    match compile_template(template) {
-        Ok(code) => {
+    match compile_template(template, "template.vue", "demo", false, None) {
+        Ok(result) => {
             println!("Output:");
             println!("-------");
-            println!("{}", code);
+            println!("{}", result.code());
         }
         Err(e) => {
             println!("Error: {}", e);

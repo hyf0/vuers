@@ -1,69 +1,67 @@
-use std::ffi::{CStr, CString};
-use std::os::raw::c_char;
+//! Vue Single File Component compiler for Rust.
+//!
+//! This crate provides Rust bindings to the Vue SFC compiler (`@vue/compiler-sfc`),
+//! compiled to native code via Static Hermes.
+//!
+//! # API Layers
+//!
+//! The crate is organized into two layers:
+//!
+//! - **`bindings`** (recommended): Safe Rust types with RAII and methods
+//! - **`ffi`**: Raw FFI bindings (unsafe, for advanced use)
+//!
+//! # Example
+//!
+//! ```no_run
+//! use libvue_compiler_sfc::{ParseResult, compile_template, compile_style};
+//!
+//! fn compile(source: &str) -> Result<(String, String), Box<dyn std::error::Error>> {
+//!     let parsed = ParseResult::parse(source, "App.vue")?;
+//!     let desc = parsed.descriptor().ok_or("No descriptor")?;
+//!
+//!     // Compile script
+//!     let script = desc.compile_script("scope-id", false)?;
+//!
+//!     // Compile template with bindings from script
+//!     let template = compile_template(
+//!         desc.template().unwrap().content(),
+//!         "App.vue",
+//!         "scope-id",
+//!         desc.has_scoped_style(),
+//!         script.bindings().as_ref(),
+//!     )?;
+//!
+//!     // Compile styles
+//!     let css: Vec<String> = desc.styles()
+//!         .map(|s| compile_style(s.content(), "App.vue", "scope-id", s.is_scoped()))
+//!         .collect::<Result<Vec<_>, _>>()?
+//!         .into_iter()
+//!         .map(|r| r.code().to_string())
+//!         .collect();
+//!
+//!     Ok((
+//!         format!("{}\n{}", script.content(), template.code()),
+//!         css.join("\n"),
+//!     ))
+//! }
+//! ```
 
-extern "C" {
-    fn vue_compile_template(template_str: *const c_char) -> *mut c_char;
-    fn vue_compile_batch(templates_json: *const c_char) -> *mut c_char;
-    fn vue_free_string(ptr: *mut c_char);
-}
+// Layer 1: Raw FFI (unsafe, extern "C")
+pub mod ffi;
 
-#[derive(Debug)]
-pub struct CompileError(pub String);
+// Layer 2: Safe Rust bindings (recommended)
+pub mod bindings;
 
-impl std::fmt::Display for CompileError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl std::error::Error for CompileError {}
-
-pub fn compile_template(template: &str) -> Result<String, CompileError> {
-    let c_template = CString::new(template)
-        .map_err(|e| CompileError(format!("Invalid template string: {}", e)))?;
-
-    let result_ptr = unsafe { vue_compile_template(c_template.as_ptr()) };
-
-    if result_ptr.is_null() {
-        return Err(CompileError("Compilation returned null".to_string()));
-    }
-
-    let result_str = unsafe {
-        let c_str = CStr::from_ptr(result_ptr);
-        let s = c_str.to_string_lossy().into_owned();
-        vue_free_string(result_ptr);
-        s
-    };
-
-    if result_str.starts_with("ERROR: ") {
-        return Err(CompileError(result_str[7..].to_string()));
-    }
-
-    Ok(result_str)
-}
-
-pub fn compile_batch(templates: &[&str]) -> Result<Vec<String>, CompileError> {
-    let json = serde_json::to_string(templates)
-        .map_err(|e| CompileError(format!("JSON error: {}", e)))?;
-
-    let c_json = CString::new(json)
-        .map_err(|e| CompileError(format!("Invalid JSON: {}", e)))?;
-
-    let result_ptr = unsafe { vue_compile_batch(c_json.as_ptr()) };
-
-    if result_ptr.is_null() {
-        return Err(CompileError("Batch compilation returned null".to_string()));
-    }
-
-    let result_str = unsafe {
-        let c_str = CStr::from_ptr(result_ptr);
-        let s = c_str.to_string_lossy().into_owned();
-        vue_free_string(result_ptr);
-        s
-    };
-
-    let results: Vec<String> = serde_json::from_str(&result_str)
-        .map_err(|e| CompileError(format!("Failed to parse results: {}", e)))?;
-
-    Ok(results)
-}
+// Re-export bindings API as the primary API
+pub use bindings::{
+    // Core types
+    Handle, Error, Result,
+    // Parse
+    ParseResult, Descriptor,
+    // Blocks
+    TemplateBlock, ScriptBlock, StyleBlock,
+    // Compile results
+    ScriptResult, TemplateResult, StyleResult, Bindings,
+    // Compile functions
+    compile_template, compile_style,
+};

@@ -7,7 +7,7 @@ const projectRoot = resolve(__dirname, "..");
 
 async function bundle(): Promise<void> {
   const bundler = await rolldown({
-    input: resolve(projectRoot, "ffi/vue-compiler.js"),
+    input: resolve(projectRoot, "ffi/js/vue_compiler_sfc_bridge.js"),
     platform: "browser",
     resolve: {
       conditionNames: ["module", "import", "browser", "default"],

@@ -2,3 +2,5 @@
 node_modules
 dist
 CLAUDE.local.md
+specs
+tmp
