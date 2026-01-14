@@ -17,7 +17,7 @@ async function bundle(): Promise<void> {
   });
 
   await bundler.write({
-    dir: resolve(projectRoot, "dist"),
+    file: resolve(projectRoot, "dist/vue-compiler.js"),
     format: "iife",
     name: "VueCompiler",
   });

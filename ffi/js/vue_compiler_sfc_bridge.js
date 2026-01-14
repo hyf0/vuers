@@ -15,10 +15,10 @@
  */
 
 import {
-    parse,
-    compileScript,
-    compileTemplate,
-    compileStyle,
+    parse as sfcParse,
+    compileScript as sfcCompileScript,
+    compileTemplate as sfcCompileTemplate,
+    compileStyle as sfcCompileStyle,
 } from '@vue/compiler-sfc';
 
 // ============================================================================
@@ -33,14 +33,14 @@ import {
  * @returns {Object} Parse result with `descriptor` and `errors` properties.
  *
  * @example
- * const result = parseRaw('<template><div>Hello</div></template>', 'App.vue');
+ * const result = parse('<template><div>Hello</div></template>', 'App.vue');
  * if (result.errors.length === 0) {
  *   console.log(result.descriptor.template.content);
  * }
  */
-globalThis.parseRaw = function(source, filename) {
+globalThis.parse = function(source, filename) {
     try {
-        return parse(source, { filename, sourceMap: true });
+        return sfcParse(source, { filename, sourceMap: true });
     } catch (e) {
         return {
             descriptor: null,
@@ -65,13 +65,13 @@ globalThis.parseRaw = function(source, filename) {
  * @returns {Object} Compilation result with `content`, `bindings`, `map`, and `warnings`.
  *
  * @example
- * const scriptResult = compileScriptRaw(descriptor, 'data-v-abc123', false);
+ * const scriptResult = compileScript(descriptor, 'data-v-abc123', false);
  * console.log(scriptResult.content); // Compiled JavaScript
  * console.log(scriptResult.bindings); // { msg: 'setup-ref', count: 'setup-ref' }
  */
-globalThis.compileScriptRaw = function(descriptor, id, isProd) {
+globalThis.compileScript = function(descriptor, id, isProd) {
     try {
-        const result = compileScript(descriptor, {
+        const result = sfcCompileScript(descriptor, {
             id,
             isProd,
             sourceMap: true,
@@ -102,11 +102,11 @@ globalThis.compileScriptRaw = function(descriptor, id, isProd) {
  * @param {string} filename - The filename (used for error messages).
  * @param {string} id - Scope ID for scoped styles (e.g., "data-v-abc123").
  * @param {boolean} scoped - Whether the component has scoped styles.
- * @param {Object|null} bindings - Binding metadata from compileScriptRaw() for optimization.
+ * @param {Object|null} bindings - Binding metadata from compileScript() for optimization.
  * @returns {Object} Compilation result with `code`, `ast`, `preamble`, `map`, `errors`, and `tips`.
  *
  * @example
- * const templateResult = compileTemplateRaw(
+ * const templateResult = compileTemplate(
  *   '<div>{{ msg }}</div>',
  *   'App.vue',
  *   'data-v-abc123',
@@ -115,9 +115,9 @@ globalThis.compileScriptRaw = function(descriptor, id, isProd) {
  * );
  * console.log(templateResult.code); // render function code
  */
-globalThis.compileTemplateRaw = function(source, filename, id, scoped, bindings) {
+globalThis.compileTemplate = function(source, filename, id, scoped, bindings) {
     try {
-        const result = compileTemplate({
+        const result = sfcCompileTemplate({
             source,
             filename,
             id,
@@ -158,7 +158,7 @@ globalThis.compileTemplateRaw = function(source, filename, id, scoped, bindings)
  * @returns {Object} Compilation result with `code`, `errors`, and `dependencies`.
  *
  * @example
- * const styleResult = compileStyleRaw(
+ * const styleResult = compileStyle(
  *   '.container { color: red; }',
  *   'App.vue',
  *   'data-v-abc123',
@@ -167,9 +167,9 @@ globalThis.compileTemplateRaw = function(source, filename, id, scoped, bindings)
  * // Output: .container[data-v-abc123] { color: red; }
  * console.log(styleResult.code);
  */
-globalThis.compileStyleRaw = function(source, filename, id, scoped) {
+globalThis.compileStyle = function(source, filename, id, scoped) {
     try {
-        const result = compileStyle({
+        const result = sfcCompileStyle({
             source,
             filename,
             id,

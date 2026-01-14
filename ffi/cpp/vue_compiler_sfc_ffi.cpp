@@ -75,10 +75,10 @@ static facebook::hermes::HermesRuntime *s_hermes = nullptr;
  * destruction order issues when the program exits, as the Hermes runtime
  * may be destroyed before these function objects.
  */
-static facebook::jsi::Function* s_parseRawFn = nullptr;
-static facebook::jsi::Function* s_compileScriptRawFn = nullptr;
-static facebook::jsi::Function* s_compileTemplateRawFn = nullptr;
-static facebook::jsi::Function* s_compileStyleRawFn = nullptr;
+static facebook::jsi::Function* s_parseFn = nullptr;
+static facebook::jsi::Function* s_compileScriptFn = nullptr;
+static facebook::jsi::Function* s_compileTemplateFn = nullptr;
+static facebook::jsi::Function* s_compileStyleFn = nullptr;
 
 // ============================================================================
 // Handle Table
@@ -205,14 +205,14 @@ static void init_runtime() {
     // Cache references to the JavaScript functions
     // These are allocated with `new` and intentionally never freed
     auto global = s_hermes->global();
-    s_parseRawFn = new facebook::jsi::Function(
-        global.getPropertyAsFunction(*s_hermes, "parseRaw"));
-    s_compileScriptRawFn = new facebook::jsi::Function(
-        global.getPropertyAsFunction(*s_hermes, "compileScriptRaw"));
-    s_compileTemplateRawFn = new facebook::jsi::Function(
-        global.getPropertyAsFunction(*s_hermes, "compileTemplateRaw"));
-    s_compileStyleRawFn = new facebook::jsi::Function(
-        global.getPropertyAsFunction(*s_hermes, "compileStyleRaw"));
+    s_parseFn = new facebook::jsi::Function(
+        global.getPropertyAsFunction(*s_hermes, "parse"));
+    s_compileScriptFn = new facebook::jsi::Function(
+        global.getPropertyAsFunction(*s_hermes, "compileScript"));
+    s_compileTemplateFn = new facebook::jsi::Function(
+        global.getPropertyAsFunction(*s_hermes, "compileTemplate"));
+    s_compileStyleFn = new facebook::jsi::Function(
+        global.getPropertyAsFunction(*s_hermes, "compileStyle"));
 }
 
 // ============================================================================
@@ -254,7 +254,7 @@ extern "C" uint64_t vue_parse(const char* source, const char* filename) {
 
     auto jsSource = facebook::jsi::String::createFromUtf8(rt, source);
     auto jsFilename = facebook::jsi::String::createFromUtf8(rt, filename);
-    auto result = s_parseRawFn->call(rt, jsSource, jsFilename);
+    auto result = s_parseFn->call(rt, jsSource, jsFilename);
 
     return allocate_handle(std::move(result));
 }
@@ -534,7 +534,7 @@ extern "C" uint64_t vue_compile_script(uint64_t desc_handle, const char* id, boo
 
     auto& rt = *s_hermes;
     auto jsId = facebook::jsi::String::createFromUtf8(rt, id);
-    auto result = s_compileScriptRawFn->call(rt, *entry->value, jsId, is_prod);
+    auto result = s_compileScriptFn->call(rt, *entry->value, jsId, is_prod);
 
     return allocate_handle(std::move(result));
 }
@@ -616,7 +616,7 @@ extern "C" uint64_t vue_compile_template(
         }
     }
 
-    auto result = s_compileTemplateRawFn->call(rt, jsSource, jsFilename, jsId, scoped, jsBindings);
+    auto result = s_compileTemplateFn->call(rt, jsSource, jsFilename, jsId, scoped, jsBindings);
     return allocate_handle(std::move(result));
 }
 
@@ -686,7 +686,7 @@ extern "C" uint64_t vue_compile_style(
     auto jsFilename = facebook::jsi::String::createFromUtf8(rt, filename);
     auto jsId = facebook::jsi::String::createFromUtf8(rt, id);
 
-    auto result = s_compileStyleRawFn->call(rt, jsSource, jsFilename, jsId, scoped);
+    auto result = s_compileStyleFn->call(rt, jsSource, jsFilename, jsId, scoped);
     return allocate_handle(std::move(result));
 }
 
