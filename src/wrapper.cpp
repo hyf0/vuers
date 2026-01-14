@@ -11,8 +11,9 @@ extern "C" SHUnit sh_export_vue_compiler;
 // Cached runtime and functions
 static SHRuntime *s_shRuntime = nullptr;
 static facebook::hermes::HermesRuntime *s_hermes = nullptr;
-static std::unique_ptr<facebook::jsi::Function> s_compileFn;
-static std::unique_ptr<facebook::jsi::Function> s_compileBatchFn;
+// Use raw pointers and intentionally leak to avoid destruction order issues
+static facebook::jsi::Function *s_compileFn = nullptr;
+static facebook::jsi::Function *s_compileBatchFn = nullptr;
 
 static void init_runtime() {
   if (s_shRuntime == nullptr) {
@@ -22,9 +23,9 @@ static void init_runtime() {
       abort();
     }
     auto global = s_hermes->global();
-    s_compileFn = std::make_unique<facebook::jsi::Function>(
+    s_compileFn = new facebook::jsi::Function(
       global.getPropertyAsFunction(*s_hermes, "compile"));
-    s_compileBatchFn = std::make_unique<facebook::jsi::Function>(
+    s_compileBatchFn = new facebook::jsi::Function(
       global.getPropertyAsFunction(*s_hermes, "compileBatch"));
   }
 }
