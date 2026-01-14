@@ -17,9 +17,10 @@ fn main() {
 
     // Bundle the Vue compiler JS (always run to ensure it's up to date)
     let bundle_status = Command::new("node")
-        .args(["scripts/bundle.mjs"])
+        .args(["--experimental-strip-types", "--no-warnings", "bundle.ts"])
+        .current_dir("tools")
         .status()
-        .expect("Failed to run bundle.mjs");
+        .expect("Failed to run bundle.ts");
     if !bundle_status.success() {
         panic!("Failed to bundle Vue compiler JS");
     }
@@ -37,7 +38,7 @@ fn main() {
     // Compile the C++ wrapper
     cc::Build::new()
         .cpp(true)
-        .file("src/wrapper.cpp")
+        .file("ffi/wrapper.cpp")
         .include(hermes_path.join("API"))
         .include(hermes_path.join("API/jsi"))
         .include(hermes_path.join("include"))
@@ -66,7 +67,8 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=Foundation");
 
     // Rerun if sources change
-    println!("cargo:rerun-if-changed=src/wrapper.cpp");
-    println!("cargo:rerun-if-changed=src/vue-compiler.js");
-    println!("cargo:rerun-if-changed=scripts/bundle.mjs");
+    println!("cargo:rerun-if-changed=ffi/wrapper.cpp");
+    println!("cargo:rerun-if-changed=ffi/vue-compiler.js");
+    println!("cargo:rerun-if-changed=tools/bundle.ts");
+    println!("cargo:rerun-if-changed=tools/package.json");
 }

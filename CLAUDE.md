@@ -4,61 +4,74 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-rusty-vue compiles the Vue template compiler (@vue/compiler-dom) to native code using Static Hermes, making it callable from Rust without a JavaScript runtime.
+vue-compiler compiles the Vue template compiler (@vue/compiler-dom) to native code using Static Hermes, making it callable from Rust without a JavaScript runtime.
 
 ## Build Commands
 
 ### Prerequisites
-- Initialize the hermes submodule and build it (see spec.md for build instructions):
-  ```bash
-  git submodule update --init
-  cd hermes && cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && cmake --build ./build
-  ```
+- Install [just](https://github.com/casey/just) command runner
+- Install [Ninja](https://ninja-build.org/) build system
 - `HERMES_HOME` defaults to `./hermes` (the submodule)
 
 ### Building
 ```bash
-# Install JS dependencies
-pnpm install
+# Set up everything (first time only)
+just setup
 
-# Bundle Vue compiler to single JS file
-node scripts/bundle.mjs
-
-# Compile JS to native object with Static Hermes
-$HERMES_HOME/build/bin/shermes -O -c -exported-unit=vue_compiler dist/vue-compiler.js
-
-# Build Rust library and binary
-cargo build --release
+# Build the project
+just build
 ```
 
 ### Running
 ```bash
-# Run benchmarks
-cargo run --release
+# Run demo
+just run
 
-# Run Node.js comparison benchmarks
-node scripts/benchmark-node.mjs
-node scripts/benchmark-pure-js.mjs
+# Run all benchmarks
+just bench
+
+# Individual benchmarks
+just bench-native
+just bench-node
+just bench-pure
 ```
 
 ## Architecture
 
 The build pipeline has 4 stages:
 
-1. **Bundle JS** (`scripts/bundle.mjs`): Uses Rolldown to bundle `@vue/compiler-sfc` into a single `dist/vue-compiler.js` file with no external dependencies
+1. **Bundle JS** (`tools/bundle.ts`): Uses Rolldown to bundle `@vue/compiler-sfc` into a single `dist/vue-compiler.js` file with no external dependencies
 
 2. **Compile to Native** (`shermes`): Static Hermes compiles the bundled JS to a native object file `dist/vue-compiler.o`
 
-3. **C++ Wrapper** (`src/wrapper.cpp`): Provides FFI interface between Rust and the Hermes runtime. Exposes `vue_compile_template()` and `vue_compile_batch()` functions. Caches the Hermes runtime and JS function references for performance.
+3. **C++ Wrapper** (`ffi/wrapper.cpp`): Provides FFI interface between Rust and the Hermes runtime. Exposes `vue_compile_template()` and `vue_compile_batch()` functions. Caches the Hermes runtime and JS function references for performance.
 
 4. **Rust Crate** (`src/lib.rs`): Safe Rust API wrapping the FFI calls. Exposes `compile_template()` and `compile_batch()` functions.
 
-### Key Files
-- `src/vue-compiler.js` - JS entry point exposing `compile` and `compileBatch` on globalThis
-- `src/wrapper.cpp` - C++ FFI bridge using Hermes JSI API
-- `src/lib.rs` - Rust public API
-- `build.rs` - Cargo build script linking Hermes libraries
-- `spec.md` - Detailed architecture and benchmark documentation
+## Project Structure
+
+```
+vuers/
+├── src/                    # Rust source
+│   └── lib.rs              # Public API
+├── examples/               # Example programs
+│   └── demo.rs             # Demo/benchmark
+├── ffi/                    # FFI bridge layer
+│   ├── wrapper.cpp         # C++ bridge to Hermes
+│   └── vue-compiler.js     # JS entry (compiled to native)
+├── tools/                  # Build tooling (npm package)
+│   ├── package.json
+│   ├── bundle.ts           # Rolldown bundler
+│   └── benchmark-*.ts      # Benchmark scripts
+├── hermes/                 # Git submodule (Static Hermes)
+├── dist/                   # Build artifacts
+│   ├── vue-compiler.js     # Bundled JS
+│   └── vue-compiler.o      # Compiled native object
+├── build.rs                # Cargo build script
+├── Cargo.toml
+├── justfile                # Task runner
+└── README.md
+```
 
 ### Linking
 The `build.rs` links against:

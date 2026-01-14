@@ -7,10 +7,6 @@ edition = "2021"
 name = "rusty_vue"
 path = "src/lib.rs"
 
-[[bin]]
-name = "rusty-vue"
-path = "src/main.rs"
-
 [dependencies]
 serde_json = "1.0"
 
