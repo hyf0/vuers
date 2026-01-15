@@ -1,8 +1,49 @@
-//! Raw extern "C" function declarations for the Vue SFC compiler FFI.
+//! Raw FFI bindings to the Vue SFC compiler via Static Hermes.
 //!
-//! This module provides direct bindings to the C++ wrapper functions defined in
-//! `ffi/cpp/runtime.cpp` and `ffi/cpp/vue_sfc.cpp`. All functions operate on
-//! opaque handles and require careful attention to memory management.
+//! This crate provides low-level, unsafe bindings to the C++ wrapper layer
+//! that interfaces with the Vue compiler compiled to native code via Static Hermes.
+//!
+//! # Architecture
+//!
+//! ```text
+//! Rust (this crate)
+//!     │
+//!     │ extern "C" calls
+//!     ▼
+//! C++ Wrapper (ffi/cpp/runtime.cpp, ffi/cpp/vue_sfc.cpp)
+//!     │
+//!     │ Hermes JSI calls
+//!     ▼
+//! JavaScript (ffi/vue-compiler.js)
+//!     │
+//!     │ @vue/compiler-sfc API
+//!     ▼
+//! Vue SFC Compiler (native code via Static Hermes)
+//! ```
+//!
+//! # Types
+//!
+//! - [`HermesRuntime`]: Opaque pointer to a Hermes runtime instance that owns
+//!   the JS heap, handle table, and cached Vue compiler functions.
+//! - [`HermesHandle`]: 64-bit handle to a JS object (0 = invalid/null)
+//!
+//! # Handle-Based API
+//!
+//! All JS objects are represented as opaque handles ([`HermesHandle`]). Handles are:
+//! - 64-bit integers (0 = invalid/null)
+//! - 1-indexed into an internal handle table
+//! - Must be freed with [`hermes_handle_free`] when no longer needed
+//!
+//! # Safety
+//!
+//! All functions in this module are unsafe because they:
+//! - Dereference raw pointers (C strings)
+//! - Operate on opaque handles that may be invalid
+//! - Call into the Hermes runtime which is not thread-safe
+//!
+//! **Important**: The Hermes runtime is single-threaded. All FFI calls for a
+//! given runtime must be made from the same thread. Do not share handles across
+//! threads.
 //!
 //! # Memory Model
 //!

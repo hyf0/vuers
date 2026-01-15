@@ -95,6 +95,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
 
 [[package]]
+name = "lib_vue_compiler_sfc_sys"
+version = "0.1.0"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.180"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -104,8 +111,8 @@ checksum = "bcc35a38544a891a5f7c865aca548a982ccb3b8650a5b06d0fd33a10283c56fc"
 name = "libvue_compiler_sfc"
 version = "0.1.0"
 dependencies = [
- "cc",
  "insta",
+ "lib_vue_compiler_sfc_sys",
  "serde",
  "serde_json",
 ]

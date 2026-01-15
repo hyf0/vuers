@@ -1,0 +1,8 @@
+[package]
+name = "lib_vue_compiler_sfc_sys"
+version = "0.1.0"
+edition = "2021"
+links = "vue_compiler_sfc"
+
+[build-dependencies]
+cc = "1.0"

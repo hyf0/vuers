@@ -53,8 +53,8 @@
 //! }
 //! ```
 
-// Layer 1: Raw FFI (unsafe, extern "C")
-mod ffi;
+// Layer 1: Raw FFI (unsafe, extern "C") - re-exported from sys crate
+pub use lib_vue_compiler_sfc_sys as ffi;
 
 // Layer 2: Safe Rust bindings (recommended)
 mod bindings;
