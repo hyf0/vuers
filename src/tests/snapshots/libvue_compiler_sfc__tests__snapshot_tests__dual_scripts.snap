@@ -1,0 +1,103 @@
+---
+source: src/tests/snapshot_tests.rs
+expression: snapshot
+---
+ParseOutputSnapshot {
+    has_errors: false,
+    error_count: 0,
+    errors: [],
+    descriptor: Some(
+        DescriptorSnapshot {
+            filename: "DualScript.vue",
+            source_length: 225,
+            css_vars: [],
+            slotted: false,
+            custom_blocks_count: 0,
+            template: Some(
+                TemplateBlockSnapshot {
+                    content: "\n  <div>{{ count }}</div>\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 10,
+                            line: 1,
+                            column: 11,
+                        },
+                        end: PositionSnapshot {
+                            offset: 36,
+                            line: 3,
+                            column: 1,
+                        },
+                    },
+                    attrs: {},
+                },
+            ),
+            script: Some(
+                ScriptBlockSnapshot {
+                    content: "\nexport default {\n  name: 'DualScript',\n  inheritAttrs: false\n}\n",
+                    lang: "ts",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 67,
+                            line: 5,
+                            column: 19,
+                        },
+                        end: PositionSnapshot {
+                            offset: 131,
+                            line: 10,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "lang": String(
+                            "ts",
+                        ),
+                    },
+                    is_setup: false,
+                    setup_value: None,
+                    bindings: {},
+                    imports: {},
+                    warnings: [],
+                    deps: [],
+                },
+            ),
+            script_setup: Some(
+                ScriptBlockSnapshot {
+                    content: "\nimport { ref } from 'vue'\n\nconst count = ref(0)\n",
+                    lang: "ts",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 166,
+                            line: 12,
+                            column: 25,
+                        },
+                        end: PositionSnapshot {
+                            offset: 215,
+                            line: 16,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "lang": String(
+                            "ts",
+                        ),
+                        "setup": Bool(
+                            true,
+                        ),
+                    },
+                    is_setup: true,
+                    setup_value: None,
+                    bindings: {},
+                    imports: {},
+                    warnings: [],
+                    deps: [],
+                },
+            ),
+            styles: [],
+            custom_blocks: [],
+        },
+    ),
+}

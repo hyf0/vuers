@@ -1,0 +1,113 @@
+---
+source: src/tests/snapshot_tests.rs
+expression: snapshot
+---
+ParseOutputSnapshot {
+    has_errors: false,
+    error_count: 0,
+    errors: [],
+    descriptor: Some(
+        DescriptorSnapshot {
+            filename: "External.vue",
+            source_length: 131,
+            css_vars: [],
+            slotted: false,
+            custom_blocks_count: 0,
+            template: Some(
+                TemplateBlockSnapshot {
+                    content: "",
+                    lang: "",
+                    src: Some(
+                        "./template.html",
+                    ),
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 32,
+                            line: 1,
+                            column: 33,
+                        },
+                        end: PositionSnapshot {
+                            offset: 32,
+                            line: 1,
+                            column: 33,
+                        },
+                    },
+                    attrs: {
+                        "src": String(
+                            "./template.html",
+                        ),
+                    },
+                },
+            ),
+            script: Some(
+                ScriptBlockSnapshot {
+                    content: "",
+                    lang: "ts",
+                    src: Some(
+                        "./script.ts",
+                    ),
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 80,
+                            line: 2,
+                            column: 37,
+                        },
+                        end: PositionSnapshot {
+                            offset: 80,
+                            line: 2,
+                            column: 37,
+                        },
+                    },
+                    attrs: {
+                        "lang": String(
+                            "ts",
+                        ),
+                        "src": String(
+                            "./script.ts",
+                        ),
+                    },
+                    is_setup: false,
+                    setup_value: None,
+                    bindings: {},
+                    imports: {},
+                    warnings: [],
+                    deps: [],
+                },
+            ),
+            script_setup: None,
+            styles: [
+                StyleBlockSnapshot {
+                    content: "",
+                    lang: "",
+                    src: Some(
+                        "./style.css",
+                    ),
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 122,
+                            line: 3,
+                            column: 33,
+                        },
+                        end: PositionSnapshot {
+                            offset: 122,
+                            line: 3,
+                            column: 33,
+                        },
+                    },
+                    attrs: {
+                        "scoped": Bool(
+                            true,
+                        ),
+                        "src": String(
+                            "./style.css",
+                        ),
+                    },
+                    is_scoped: true,
+                    has_module: false,
+                    module_name: None,
+                },
+            ],
+            custom_blocks: [],
+        },
+    ),
+}

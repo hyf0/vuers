@@ -1,0 +1,112 @@
+---
+source: src/tests/snapshot_tests.rs
+expression: snapshot
+---
+ParseOutputSnapshot {
+    has_errors: true,
+    error_count: 1,
+    errors: [
+        "<template functional> is no longer supported in Vue 3, since functional components no longer have significant performance difference from stateful ones. Just use a normal <template> instead.",
+    ],
+    descriptor: Some(
+        DescriptorSnapshot {
+            filename: "Attributes.vue",
+            source_length: 216,
+            css_vars: [],
+            slotted: false,
+            custom_blocks_count: 0,
+            template: Some(
+                TemplateBlockSnapshot {
+                    content: "\n  <div>Functional template</div>\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 21,
+                            line: 1,
+                            column: 22,
+                        },
+                        end: PositionSnapshot {
+                            offset: 55,
+                            line: 3,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "functional": Bool(
+                            true,
+                        ),
+                    },
+                },
+            ),
+            script: Some(
+                ScriptBlockSnapshot {
+                    content: "\nexport default {}\n",
+                    lang: "ts",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 113,
+                            line: 5,
+                            column: 46,
+                        },
+                        end: PositionSnapshot {
+                            offset: 132,
+                            line: 7,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "generic": String(
+                            "T extends string",
+                        ),
+                        "lang": String(
+                            "ts",
+                        ),
+                    },
+                    is_setup: false,
+                    setup_value: None,
+                    bindings: {},
+                    imports: {},
+                    warnings: [],
+                    deps: [],
+                },
+            ),
+            script_setup: None,
+            styles: [
+                StyleBlockSnapshot {
+                    content: "\n.test { color: red; }\n",
+                    lang: "scss",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 184,
+                            line: 9,
+                            column: 42,
+                        },
+                        end: PositionSnapshot {
+                            offset: 207,
+                            line: 11,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "lang": String(
+                            "scss",
+                        ),
+                        "media": String(
+                            "screen",
+                        ),
+                        "scoped": Bool(
+                            true,
+                        ),
+                    },
+                    is_scoped: true,
+                    has_module: false,
+                    module_name: None,
+                },
+            ],
+            custom_blocks: [],
+        },
+    ),
+}

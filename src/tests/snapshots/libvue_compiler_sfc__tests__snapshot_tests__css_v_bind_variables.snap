@@ -1,0 +1,102 @@
+---
+source: src/tests/snapshot_tests.rs
+expression: snapshot
+---
+ParseOutputSnapshot {
+    has_errors: false,
+    error_count: 0,
+    errors: [],
+    descriptor: Some(
+        DescriptorSnapshot {
+            filename: "VBind.vue",
+            source_length: 344,
+            css_vars: [
+                "primaryColor",
+                "borderWidth",
+                "fontSize",
+                "primaryColor + \"22\"",
+            ],
+            slotted: false,
+            custom_blocks_count: 0,
+            template: Some(
+                TemplateBlockSnapshot {
+                    content: "\n  <div class=\"box\">Styled Box</div>\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 10,
+                            line: 1,
+                            column: 11,
+                        },
+                        end: PositionSnapshot {
+                            offset: 47,
+                            line: 3,
+                            column: 1,
+                        },
+                    },
+                    attrs: {},
+                },
+            ),
+            script: None,
+            script_setup: Some(
+                ScriptBlockSnapshot {
+                    content: "\nconst primaryColor = '#42b883'\nconst borderWidth = '2px'\nconst fontSize = '16px'\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 74,
+                            line: 5,
+                            column: 15,
+                        },
+                        end: PositionSnapshot {
+                            offset: 156,
+                            line: 9,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "setup": Bool(
+                            true,
+                        ),
+                    },
+                    is_setup: true,
+                    setup_value: None,
+                    bindings: {},
+                    imports: {},
+                    warnings: [],
+                    deps: [],
+                },
+            ),
+            styles: [
+                StyleBlockSnapshot {
+                    content: "\n.box {\n  color: v-bind(primaryColor);\n  border-width: v-bind(borderWidth);\n  font-size: v-bind(fontSize);\n  background: v-bind('primaryColor + \"22\"');\n}\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 181,
+                            line: 11,
+                            column: 15,
+                        },
+                        end: PositionSnapshot {
+                            offset: 335,
+                            line: 18,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "scoped": Bool(
+                            true,
+                        ),
+                    },
+                    is_scoped: true,
+                    has_module: false,
+                    module_name: None,
+                },
+            ],
+            custom_blocks: [],
+        },
+    ),
+}

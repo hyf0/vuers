@@ -48,3 +48,16 @@ bundle:
 clean:
     cargo clean
     rm -rf dist/*.o dist/*.js
+
+# Set up Vue submodule for test generation
+setup-vue:
+    git submodule update --init vue
+
+# Generate Rust tests from Vue test files
+generate-tests *FILES:
+    cd tools/test-converter && pnpm install && pnpm start {{FILES}}
+
+# Update Vue submodule and regenerate tests
+update-vue-tests:
+    cd vue && git pull origin main
+    just generate-tests

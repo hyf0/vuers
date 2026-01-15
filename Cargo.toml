@@ -21,3 +21,6 @@ path = "examples/compile_sfc.rs"
 [[example]]
 name = "demo"
 path = "examples/demo.rs"
+
+[dev-dependencies]
+insta = "1.46.0"

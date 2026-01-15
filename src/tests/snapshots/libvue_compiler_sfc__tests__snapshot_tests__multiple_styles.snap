@@ -1,0 +1,169 @@
+---
+source: src/tests/snapshot_tests.rs
+expression: snapshot
+---
+ParseOutputSnapshot {
+    has_errors: false,
+    error_count: 0,
+    errors: [],
+    descriptor: Some(
+        DescriptorSnapshot {
+            filename: "MultiStyle.vue",
+            source_length: 481,
+            css_vars: [],
+            slotted: false,
+            custom_blocks_count: 0,
+            template: Some(
+                TemplateBlockSnapshot {
+                    content: "\n  <div class=\"container\">Content</div>\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 10,
+                            line: 1,
+                            column: 11,
+                        },
+                        end: PositionSnapshot {
+                            offset: 50,
+                            line: 3,
+                            column: 1,
+                        },
+                    },
+                    attrs: {},
+                },
+            ),
+            script: None,
+            script_setup: None,
+            styles: [
+                StyleBlockSnapshot {
+                    content: "\n/* Global styles */\nbody { margin: 0; }\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 70,
+                            line: 5,
+                            column: 8,
+                        },
+                        end: PositionSnapshot {
+                            offset: 111,
+                            line: 8,
+                            column: 1,
+                        },
+                    },
+                    attrs: {},
+                    is_scoped: false,
+                    has_module: false,
+                    module_name: None,
+                },
+                StyleBlockSnapshot {
+                    content: "\n/* Scoped styles */\n.container { padding: 10px; }\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 135,
+                            line: 10,
+                            column: 15,
+                        },
+                        end: PositionSnapshot {
+                            offset: 186,
+                            line: 13,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "scoped": Bool(
+                            true,
+                        ),
+                    },
+                    is_scoped: true,
+                    has_module: false,
+                    module_name: None,
+                },
+                StyleBlockSnapshot {
+                    content: "\n/* CSS Modules with default $style */\n.box { border: 1px solid; }\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 210,
+                            line: 15,
+                            column: 15,
+                        },
+                        end: PositionSnapshot {
+                            offset: 277,
+                            line: 18,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "module": Bool(
+                            true,
+                        ),
+                    },
+                    is_scoped: false,
+                    has_module: true,
+                    module_name: None,
+                },
+                StyleBlockSnapshot {
+                    content: "\n/* CSS Modules with custom name */\n.item { display: block; }\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 310,
+                            line: 20,
+                            column: 24,
+                        },
+                        end: PositionSnapshot {
+                            offset: 372,
+                            line: 23,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "module": String(
+                            "custom",
+                        ),
+                    },
+                    is_scoped: false,
+                    has_module: true,
+                    module_name: Some(
+                        "custom",
+                    ),
+                },
+                StyleBlockSnapshot {
+                    content: "\n/* SCSS scoped */\n$primary: #42b883;\n.btn { color: $primary; }\n",
+                    lang: "scss",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 408,
+                            line: 25,
+                            column: 27,
+                        },
+                        end: PositionSnapshot {
+                            offset: 472,
+                            line: 29,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "lang": String(
+                            "scss",
+                        ),
+                        "scoped": Bool(
+                            true,
+                        ),
+                    },
+                    is_scoped: true,
+                    has_module: false,
+                    module_name: None,
+                },
+            ],
+            custom_blocks: [],
+        },
+    ),
+}

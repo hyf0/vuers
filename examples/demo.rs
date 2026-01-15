@@ -1,4 +1,4 @@
-use libvue_compiler_sfc::compile_template;
+use libvue_compiler_sfc::Compiler;
 
 fn main() {
     let template = r#"<div class="container">
@@ -12,11 +12,15 @@ fn main() {
     println!("------");
     println!("{}\n", template);
 
-    match compile_template(template, "template.vue", "demo", false, None) {
-        Ok(result) => {
+    let compiler = Compiler::new().expect("Failed to create compiler");
+
+    let result = compiler.compile_template(template, "template.vue", "demo", false, None);
+
+    match result {
+        Ok(output) => {
             println!("Output:");
             println!("-------");
-            println!("{}", result.code());
+            println!("{}", output.code());
         }
         Err(e) => {
             println!("Error: {}", e);

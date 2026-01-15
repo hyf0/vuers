@@ -38,7 +38,8 @@ fn main() {
     // Compile the C++ wrapper
     cc::Build::new()
         .cpp(true)
-        .file("ffi/cpp/vue_compiler_sfc_ffi.cpp")
+        .file("ffi/cpp/runtime.cpp")
+        .file("ffi/cpp/vue_sfc.cpp")
         .include("ffi/cpp")
         .include(hermes_path.join("API"))
         .include(hermes_path.join("API/jsi"))
@@ -68,8 +69,11 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=Foundation");
 
     // Rerun if sources change
-    println!("cargo:rerun-if-changed=ffi/cpp/vue_compiler_sfc_ffi.cpp");
-    println!("cargo:rerun-if-changed=ffi/cpp/vue_compiler_sfc_ffi.h");
+    println!("cargo:rerun-if-changed=ffi/cpp/runtime.h");
+    println!("cargo:rerun-if-changed=ffi/cpp/runtime.cpp");
+    println!("cargo:rerun-if-changed=ffi/cpp/runtime_internal.h");
+    println!("cargo:rerun-if-changed=ffi/cpp/vue_sfc.h");
+    println!("cargo:rerun-if-changed=ffi/cpp/vue_sfc.cpp");
     println!("cargo:rerun-if-changed=ffi/js/vue_compiler_sfc_bridge.js");
     println!("cargo:rerun-if-changed=tools/bundle.ts");
     println!("cargo:rerun-if-changed=tools/package.json");

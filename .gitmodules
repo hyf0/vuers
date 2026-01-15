@@ -2,3 +2,6 @@
 	path = hermes
 	url = https://github.com/facebook/hermes.git
 	branch = static_h
+[submodule "vue"]
+	path = vue
+	url = https://github.com/vuejs/core.git

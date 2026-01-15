@@ -10,7 +10,7 @@
 //!     │
 //!     │ extern "C" calls
 //!     ▼
-//! C++ Wrapper (ffi/wrapper.cpp)
+//! C++ Wrapper (ffi/cpp/runtime.cpp, ffi/cpp/vue_sfc.cpp)
 //!     │
 //!     │ Hermes JSI calls
 //!     ▼
@@ -21,12 +21,18 @@
 //! Vue SFC Compiler (native code via Static Hermes)
 //! ```
 //!
+//! # Types
+//!
+//! - [`HermesRuntime`]: Opaque pointer to a Hermes runtime instance that owns
+//!   the JS heap, handle table, and cached Vue compiler functions.
+//! - [`HermesHandle`]: 64-bit handle to a JS object (0 = invalid/null)
+//!
 //! # Handle-Based API
 //!
-//! All JS objects are represented as opaque handles ([`RawHandle`]). Handles are:
+//! All JS objects are represented as opaque handles ([`HermesHandle`]). Handles are:
 //! - 64-bit integers (0 = invalid/null)
 //! - 1-indexed into an internal handle table
-//! - Must be freed with [`vue_handle_free`] when no longer needed
+//! - Must be freed with [`hermes_handle_free`] when no longer needed
 //!
 //! # Safety
 //!
@@ -35,8 +41,9 @@
 //! - Operate on opaque handles that may be invalid
 //! - Call into the Hermes runtime which is not thread-safe
 //!
-//! **Important**: The Hermes runtime is single-threaded. All FFI calls must be
-//! made from the same thread. Do not share handles across threads.
+//! **Important**: The Hermes runtime is single-threaded. All FFI calls for a
+//! given runtime must be made from the same thread. Do not share handles across
+//! threads.
 //!
 //! # Usage
 //!

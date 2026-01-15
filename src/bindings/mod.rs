@@ -6,12 +6,13 @@
 //! # Example
 //!
 //! ```ignore
-//! use libvue_compiler_sfc::{parse, compile_script, compile_template, compile_style};
+//! use libvue_compiler_sfc::Compiler;
 //!
-//! let parsed = parse(&source, "App.vue")?;
+//! let compiler = Compiler::new()?;
+//! let parsed = compiler.parse(&source, "App.vue")?;
 //! let desc = parsed.descriptor()?;
-//! let script = compile_script(&desc, "scope-id", false)?;
-//! let template = compile_template(
+//! let script = desc.compile_script("scope-id", false)?;
+//! let template = compiler.compile_template(
 //!     desc.template()?.content(),
 //!     "App.vue",
 //!     "scope-id",
@@ -19,18 +20,25 @@
 //!     Some(&script),
 //! )?;
 //! ```
+//!
+//! # Thread Safety
+//!
+//! Each `Compiler` instance must only be used from one thread at a time.
+//! To compile in parallel, create multiple `Compiler` instances - each
+//! owns its own Hermes runtime.
 
+mod compiler;
 mod handle;
 mod error;
 mod util;
+mod types;
 mod parse;
 mod blocks;
 mod compile;
 
+pub use compiler::Compiler;
 pub use error::{Error, Result};
-pub use parse::{parse, compile_script, ParseOutput, Descriptor};
+pub use parse::{ParseOutput, Descriptor};
 pub use blocks::{TemplateBlock, ScriptBlock, StyleBlock};
-pub use compile::{
-    ScriptOutput, TemplateOutput, StyleOutput,
-    compile_template, compile_style,
-};
+pub use types::{SourceLocation, Position, AttrValue, ImportBinding, CustomBlock};
+pub use compile::{ScriptOutput, TemplateOutput, StyleOutput};

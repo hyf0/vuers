@@ -6,7 +6,7 @@
 //!   dist/App.js     - Compiled JavaScript module
 //!   dist/App.css    - Scoped CSS
 
-use libvue_compiler_sfc::{parse, compile_script, compile_template, compile_style};
+use libvue_compiler_sfc::Compiler;
 use std::fs;
 use std::path::Path;
 
@@ -25,9 +25,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("=== Compiling {} ===\n", filename);
 
+    // Create compiler instance
+    let compiler = Compiler::new()?;
+
     // 1. Parse SFC
     println!("1. Parsing SFC...");
-    let parsed = parse(&source, filename)?;
+    let parsed = compiler.parse(&source, filename)?;
 
     if parsed.has_errors() {
         for err in parsed.errors() {
@@ -43,13 +46,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 2. Compile script
     println!("\n2. Compiling script...");
-    let script_result = compile_script(&desc, &scope_id, false)?;
+    let script_result = desc.compile_script(&scope_id, false)?;
     println!("   - content length: {} bytes", script_result.content().len());
 
     // 3. Compile template
     println!("\n3. Compiling template...");
     let template_result = if let Some(tmpl) = desc.template() {
-        let result = compile_template(
+        let result = compiler.compile_template(
             tmpl.content(),
             filename,
             &scope_id,
@@ -67,7 +70,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n4. Compiling styles...");
     let mut css_parts = Vec::new();
     for (i, style) in desc.styles().enumerate() {
-        let result = compile_style(
+        let result = compiler.compile_style(
             style.content(),
             filename,
             &scope_id,

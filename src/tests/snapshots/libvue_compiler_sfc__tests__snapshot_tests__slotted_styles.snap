@@ -1,0 +1,68 @@
+---
+source: src/tests/snapshot_tests.rs
+expression: snapshot
+---
+ParseOutputSnapshot {
+    has_errors: false,
+    error_count: 0,
+    errors: [],
+    descriptor: Some(
+        DescriptorSnapshot {
+            filename: "Slotted.vue",
+            source_length: 202,
+            css_vars: [],
+            slotted: true,
+            custom_blocks_count: 0,
+            template: Some(
+                TemplateBlockSnapshot {
+                    content: "\n  <div class=\"wrapper\">\n    <slot></slot>\n  </div>\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 10,
+                            line: 1,
+                            column: 11,
+                        },
+                        end: PositionSnapshot {
+                            offset: 62,
+                            line: 5,
+                            column: 1,
+                        },
+                    },
+                    attrs: {},
+                },
+            ),
+            script: None,
+            script_setup: None,
+            styles: [
+                StyleBlockSnapshot {
+                    content: "\n.wrapper {\n  padding: 10px;\n}\n\n:slotted(.slot-content) {\n  color: red;\n}\n\n:slotted(*) {\n  margin: 0;\n}\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 89,
+                            line: 7,
+                            column: 15,
+                        },
+                        end: PositionSnapshot {
+                            offset: 193,
+                            line: 19,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "scoped": Bool(
+                            true,
+                        ),
+                    },
+                    is_scoped: true,
+                    has_module: false,
+                    module_name: None,
+                },
+            ],
+            custom_blocks: [],
+        },
+    ),
+}

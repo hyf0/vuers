@@ -1,0 +1,42 @@
+---
+source: src/tests/snapshot_tests.rs
+expression: snapshot
+---
+ParseOutputSnapshot {
+    has_errors: false,
+    error_count: 0,
+    errors: [],
+    descriptor: Some(
+        DescriptorSnapshot {
+            filename: "Empty.vue",
+            source_length: 56,
+            css_vars: [],
+            slotted: false,
+            custom_blocks_count: 0,
+            template: Some(
+                TemplateBlockSnapshot {
+                    content: "",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 10,
+                            line: 1,
+                            column: 11,
+                        },
+                        end: PositionSnapshot {
+                            offset: 10,
+                            line: 1,
+                            column: 11,
+                        },
+                    },
+                    attrs: {},
+                },
+            ),
+            script: None,
+            script_setup: None,
+            styles: [],
+            custom_blocks: [],
+        },
+    ),
+}

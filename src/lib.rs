@@ -3,6 +3,12 @@
 //! This crate provides Rust bindings to the Vue SFC compiler (`@vue/compiler-sfc`),
 //! compiled to native code via Static Hermes.
 //!
+//! # Thread Safety
+//!
+//! Each `Compiler` instance must only be used from one thread at a time.
+//! To compile in parallel, create multiple `Compiler` instances - each
+//! owns its own Hermes runtime.
+//!
 //! # API Layers
 //!
 //! The crate is organized into two layers:
@@ -13,17 +19,18 @@
 //! # Example
 //!
 //! ```no_run
-//! use libvue_compiler_sfc::{parse, compile_script, compile_template, compile_style};
+//! use libvue_compiler_sfc::Compiler;
 //!
 //! fn compile(source: &str) -> Result<(String, String), Box<dyn std::error::Error>> {
-//!     let parsed = parse(source, "App.vue")?;
+//!     let compiler = Compiler::new()?;
+//!     let parsed = compiler.parse(source, "App.vue")?;
 //!     let desc = parsed.descriptor().ok_or("No descriptor")?;
 //!
 //!     // Compile script
-//!     let script = compile_script(&desc, "scope-id", false)?;
+//!     let script = desc.compile_script("scope-id", false)?;
 //!
 //!     // Compile template with bindings from script
-//!     let template = compile_template(
+//!     let template = compiler.compile_template(
 //!         desc.template().unwrap().content(),
 //!         "App.vue",
 //!         "scope-id",
@@ -33,7 +40,7 @@
 //!
 //!     // Compile styles
 //!     let css: Vec<String> = desc.styles()
-//!         .map(|s| compile_style(s.content(), "App.vue", "scope-id", s.is_scoped()))
+//!         .map(|s| compiler.compile_style(s.content(), "App.vue", "scope-id", s.is_scoped()))
 //!         .collect::<Result<Vec<_>, _>>()?
 //!         .into_iter()
 //!         .map(|r| r.code().to_string())
@@ -52,16 +59,20 @@ mod ffi;
 // Layer 2: Safe Rust bindings (recommended)
 mod bindings;
 
+// Tests
+#[cfg(test)]
+mod tests;
+
 // Re-export bindings API as the primary API
 pub use bindings::{
     // Core types
-    Error, Result,
+    Compiler, Error, Result,
     // Parse
-    parse, compile_script, ParseOutput, Descriptor,
+    ParseOutput, Descriptor,
     // Blocks
-    TemplateBlock, ScriptBlock, StyleBlock,
+    TemplateBlock, ScriptBlock, StyleBlock, CustomBlock,
     // Compile outputs
     ScriptOutput, TemplateOutput, StyleOutput,
-    // Compile functions
-    compile_template, compile_style,
+    // Common types
+    SourceLocation, Position, AttrValue, ImportBinding,
 };

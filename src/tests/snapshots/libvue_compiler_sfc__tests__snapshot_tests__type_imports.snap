@@ -1,0 +1,74 @@
+---
+source: src/tests/snapshot_tests.rs
+expression: snapshot
+---
+ParseOutputSnapshot {
+    has_errors: false,
+    error_count: 0,
+    errors: [],
+    descriptor: Some(
+        DescriptorSnapshot {
+            filename: "TypeImports.vue",
+            source_length: 226,
+            css_vars: [],
+            slotted: false,
+            custom_blocks_count: 0,
+            template: Some(
+                TemplateBlockSnapshot {
+                    content: "\n  <div>{{ value }}</div>\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 10,
+                            line: 1,
+                            column: 11,
+                        },
+                        end: PositionSnapshot {
+                            offset: 36,
+                            line: 3,
+                            column: 1,
+                        },
+                    },
+                    attrs: {},
+                },
+            ),
+            script: None,
+            script_setup: Some(
+                ScriptBlockSnapshot {
+                    content: "\nimport { ref } from 'vue'\nimport type { Ref, ComputedRef } from 'vue'\nimport { type PropType } from 'vue'\n\nconst value: Ref<number> = ref(42)\n",
+                    lang: "ts",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 73,
+                            line: 5,
+                            column: 25,
+                        },
+                        end: PositionSnapshot {
+                            offset: 216,
+                            line: 11,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "lang": String(
+                            "ts",
+                        ),
+                        "setup": Bool(
+                            true,
+                        ),
+                    },
+                    is_setup: true,
+                    setup_value: None,
+                    bindings: {},
+                    imports: {},
+                    warnings: [],
+                    deps: [],
+                },
+            ),
+            styles: [],
+            custom_blocks: [],
+        },
+    ),
+}

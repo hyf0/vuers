@@ -1,32 +1,58 @@
 //! Raw extern "C" function declarations for the Vue SFC compiler FFI.
 //!
 //! This module provides direct bindings to the C++ wrapper functions defined in
-//! `ffi/wrapper.cpp`. All functions operate on opaque handles and require careful
-//! attention to memory management.
+//! `ffi/cpp/runtime.cpp` and `ffi/cpp/vue_sfc.cpp`. All functions operate on
+//! opaque handles and require careful attention to memory management.
 //!
 //! # Memory Model
 //!
-//! - **Handles**: Opaque 64-bit identifiers for JS objects. Must be freed with
-//!   [`vue_handle_free`] when no longer needed.
-//! - **Strings**: Returned `*const c_char` pointers are owned by their parent handle
-//!   and remain valid until that handle is freed. Do not free these pointers directly.
+//! - **HermesRuntime**: Opaque pointer to the Hermes runtime. Must be destroyed
+//!   with [`hermes_runtime_destroy`] when no longer needed.
+//! - **HermesHandle**: Opaque 64-bit identifiers for JS objects. Must be freed
+//!   with [`hermes_handle_free`] when no longer needed.
+//! - **Strings**: Returned `*const c_char` pointers are owned by their parent
+//!   handle and remain valid until that handle is freed.
 //!
 //! # Thread Safety
 //!
-//! None of these functions are thread-safe. The Hermes runtime uses global state
-//! and must only be accessed from a single thread.
+//! - Each runtime instance must only be used from one thread at a time
+//! - Multiple runtime instances can be used in parallel from different threads
 
 use std::os::raw::c_char;
 
 // ============================================================================
-// Handle Type
+// Types
 // ============================================================================
+
+/// Opaque pointer to a Hermes runtime instance.
+///
+/// The runtime owns:
+/// - Static Hermes runtime (SHRuntime*)
+/// - JSI runtime
+/// - Handle table for JS objects
+/// - Cached Vue compiler function references
+///
+/// # Lifetime
+///
+/// Must be explicitly destroyed with [`hermes_runtime_destroy`] when no longer
+/// needed. All handles created by this runtime become invalid after destruction.
+#[repr(transparent)]
+#[derive(Debug, Clone, Copy)]
+pub struct HermesRuntime(*mut std::ffi::c_void);
+
+impl HermesRuntime {
+    /// Returns `true` if this runtime pointer is null.
+    #[inline]
+    pub fn is_null(self) -> bool {
+        self.0.is_null()
+    }
+}
 
 /// Opaque handle to a JavaScript object in the Hermes runtime.
 ///
-/// Handles are 64-bit identifiers that reference entries in an internal handle table
-/// managed by the C++ wrapper. They provide a way to pass JS objects across the FFI
-/// boundary without exposing internal pointers.
+/// Handles are 64-bit identifiers that reference entries in an internal handle
+/// table managed by the runtime. They provide a way to pass JS objects across
+/// the FFI boundary without exposing internal pointers.
 ///
 /// # Representation
 ///
@@ -35,30 +61,19 @@ use std::os::raw::c_char;
 ///
 /// # Lifetime
 ///
-/// Handles must be explicitly freed with [`vue_handle_free`] when no longer needed.
-/// Failing to free handles will leak memory. Strings returned by handle accessor
-/// functions (e.g., [`vue_block_content`]) are owned by the handle and become invalid
-/// when the handle is freed.
+/// Handles must be explicitly freed with [`hermes_handle_free`] when no longer
+/// needed. Failing to free handles will leak memory. Strings returned by handle
+/// accessor functions are owned by the handle and become invalid when the handle
+/// is freed.
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct RawHandle(pub u64);
+pub struct HermesHandle(pub u64);
 
-impl RawHandle {
+impl HermesHandle {
     /// The invalid/null handle value.
-    ///
-    /// This is returned by functions when an operation fails or a value doesn't exist.
-    pub const INVALID: Self = RawHandle(0);
+    pub const INVALID: Self = HermesHandle(0);
 
     /// Returns `true` if this handle is valid (non-null).
-    ///
-    /// # Example
-    ///
-    /// ```ignore
-    /// let handle = unsafe { vue_parse(source, filename) };
-    /// if handle.is_valid() {
-    ///     // handle can be used
-    /// }
-    /// ```
     #[inline]
     #[must_use]
     pub fn is_valid(self) -> bool {
@@ -66,20 +81,20 @@ impl RawHandle {
     }
 }
 
-impl Default for RawHandle {
+impl Default for HermesHandle {
     fn default() -> Self {
         Self::INVALID
     }
 }
 
-impl From<u64> for RawHandle {
+impl From<u64> for HermesHandle {
     fn from(value: u64) -> Self {
-        RawHandle(value)
+        HermesHandle(value)
     }
 }
 
-impl From<RawHandle> for u64 {
-    fn from(handle: RawHandle) -> Self {
+impl From<HermesHandle> for u64 {
+    fn from(handle: HermesHandle) -> Self {
         handle.0
     }
 }
@@ -90,23 +105,55 @@ impl From<RawHandle> for u64 {
 
 extern "C" {
     // ------------------------------------------------------------------------
+    // Runtime Lifecycle
+    // ------------------------------------------------------------------------
+
+    /// Creates a new Hermes runtime instance.
+    ///
+    /// This function:
+    /// 1. Initializes a fresh Static Hermes runtime
+    /// 2. Loads the Vue compiler unit
+    /// 3. Caches references to Vue compiler functions
+    ///
+    /// # Safety
+    ///
+    /// - The returned runtime must be destroyed with [`hermes_runtime_destroy`].
+    ///
+    /// # Returns
+    ///
+    /// A valid runtime pointer on success, or null on failure.
+    #[must_use]
+    pub fn hermes_runtime_create() -> HermesRuntime;
+
+    /// Destroys a runtime instance and releases all its resources.
+    ///
+    /// All handles created by this runtime become invalid after this call.
+    ///
+    /// # Safety
+    ///
+    /// - `rt` must be a valid runtime from [`hermes_runtime_create`],
+    ///   or null (which is a no-op).
+    /// - The runtime must not be used after this call.
+    /// - All handles created by this runtime become invalid.
+    pub fn hermes_runtime_destroy(rt: HermesRuntime);
+
+    // ------------------------------------------------------------------------
     // Handle Management
     // ------------------------------------------------------------------------
 
     /// Frees a handle and releases its associated resources.
     ///
-    /// After calling this function, the handle becomes invalid and must not be used.
-    /// Any strings that were returned by accessor functions for this handle also
-    /// become invalid.
+    /// After calling this function, the handle becomes invalid and must not be
+    /// used. Any strings that were returned by accessor functions for this
+    /// handle also become invalid.
     ///
     /// # Safety
     ///
-    /// - `handle` should be a valid handle previously returned by an FFI function,
-    ///   or `RawHandle::INVALID` (which is a no-op).
+    /// - `rt` must be a valid runtime.
+    /// - `handle` should be a valid handle previously returned by an FFI
+    ///   function, or `HermesHandle::INVALID` (which is a no-op).
     /// - The handle must not be used after this call.
-    /// - This function is idempotent for invalid handles.
-    /// - Must be called from the same thread that created the handle.
-    pub fn vue_handle_free(handle: RawHandle);
+    pub fn hermes_handle_free(rt: HermesRuntime, handle: HermesHandle);
 
     // ------------------------------------------------------------------------
     // Parsing
@@ -114,273 +161,288 @@ extern "C" {
 
     /// Parses a Vue Single File Component source string.
     ///
-    /// Returns a handle to a `ParseResult` object containing the parsed descriptor
-    /// and any parse errors.
+    /// Returns a handle to a `ParseResult` object containing the parsed
+    /// descriptor and any parse errors.
     ///
     /// # Safety
     ///
+    /// - `rt` must be a valid runtime.
     /// - `source` must be a valid UTF-8 byte slice of length `source_len`.
     /// - `filename` must be a valid UTF-8 byte slice of length `filename_len`.
     /// - Both pointers must remain valid for the duration of the call.
-    /// - Must be called from the main thread.
     ///
     /// # Returns
     ///
-    /// A valid handle on success. The handle must be freed with [`vue_handle_free`].
-    /// Even if parsing fails, a valid handle is returned containing error information.
+    /// A valid handle on success. The handle must be freed with
+    /// [`hermes_handle_free`]. Even if parsing fails, a valid handle is
+    /// returned containing error information.
     #[must_use]
     pub fn vue_parse(
+        rt: HermesRuntime,
         source: *const c_char,
         source_len: usize,
         filename: *const c_char,
         filename_len: usize,
-    ) -> RawHandle;
+    ) -> HermesHandle;
 
     /// Gets the descriptor handle from a parse result.
-    ///
-    /// The descriptor contains information about the SFC's template, script, and style blocks.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid `ParseResult` handle from [`vue_parse`].
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A valid handle to the descriptor, or `RawHandle::INVALID` if the parse failed.
-    /// The returned handle must be freed separately from the parse result handle.
     #[must_use]
-    pub fn vue_parse_result_descriptor(handle: RawHandle) -> RawHandle;
+    pub fn vue_parse_result_descriptor(rt: HermesRuntime, handle: HermesHandle) -> HermesHandle;
 
     /// Gets the number of parse errors.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid `ParseResult` handle from [`vue_parse`].
-    /// - Must be called from the main thread.
     #[must_use]
-    pub fn vue_parse_result_error_count(handle: RawHandle) -> usize;
+    pub fn vue_parse_result_error_count(rt: HermesRuntime, handle: HermesHandle) -> usize;
 
     /// Gets an error message at the specified index.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid `ParseResult` handle from [`vue_parse`].
-    /// - `index` must be less than the value returned by [`vue_parse_result_error_count`].
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A pointer to a null-terminated UTF-8 string owned by the handle.
-    /// The string remains valid until the handle is freed.
-    /// Returns an empty string if the handle or index is invalid.
     #[must_use]
-    pub fn vue_parse_result_error_message(handle: RawHandle, index: usize) -> *const c_char;
+    pub fn vue_parse_result_error_message(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> *const c_char;
 
     // ------------------------------------------------------------------------
     // Descriptor Accessors
     // ------------------------------------------------------------------------
 
-    /// Checks if the descriptor has a `<template>` block.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid descriptor handle from [`vue_parse_result_descriptor`].
-    /// - Must be called from the main thread.
     #[must_use]
-    pub fn vue_descriptor_has_template(handle: RawHandle) -> bool;
+    pub fn vue_descriptor_has_template(rt: HermesRuntime, handle: HermesHandle) -> bool;
 
-    /// Checks if the descriptor has a `<script>` block (not setup).
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid descriptor handle from [`vue_parse_result_descriptor`].
-    /// - Must be called from the main thread.
     #[must_use]
-    pub fn vue_descriptor_has_script(handle: RawHandle) -> bool;
+    pub fn vue_descriptor_has_script(rt: HermesRuntime, handle: HermesHandle) -> bool;
 
-    /// Checks if the descriptor has a `<script setup>` block.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid descriptor handle from [`vue_parse_result_descriptor`].
-    /// - Must be called from the main thread.
     #[must_use]
-    pub fn vue_descriptor_has_script_setup(handle: RawHandle) -> bool;
+    pub fn vue_descriptor_has_script_setup(rt: HermesRuntime, handle: HermesHandle) -> bool;
 
-    /// Gets the number of `<style>` blocks in the component.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid descriptor handle from [`vue_parse_result_descriptor`].
-    /// - Must be called from the main thread.
     #[must_use]
-    pub fn vue_descriptor_style_count(handle: RawHandle) -> usize;
+    pub fn vue_descriptor_style_count(rt: HermesRuntime, handle: HermesHandle) -> usize;
 
-    /// Gets the template block handle.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid descriptor handle from [`vue_parse_result_descriptor`].
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A handle to the template block, or `RawHandle::INVALID` if no template exists.
-    /// The returned handle must be freed separately.
     #[must_use]
-    pub fn vue_descriptor_template(handle: RawHandle) -> RawHandle;
+    pub fn vue_descriptor_template(rt: HermesRuntime, handle: HermesHandle) -> HermesHandle;
 
-    /// Gets the script setup block handle.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid descriptor handle from [`vue_parse_result_descriptor`].
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A handle to the script setup block, or `RawHandle::INVALID` if none exists.
-    /// The returned handle must be freed separately.
     #[must_use]
-    pub fn vue_descriptor_script_setup(handle: RawHandle) -> RawHandle;
+    pub fn vue_descriptor_script_setup(rt: HermesRuntime, handle: HermesHandle) -> HermesHandle;
 
-    /// Gets a style block handle by index.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid descriptor handle from [`vue_parse_result_descriptor`].
-    /// - `index` must be less than the value returned by [`vue_descriptor_style_count`].
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A handle to the style block, or `RawHandle::INVALID` if the index is out of bounds.
-    /// The returned handle must be freed separately.
     #[must_use]
-    pub fn vue_descriptor_style_at(handle: RawHandle, index: usize) -> RawHandle;
+    pub fn vue_descriptor_style_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> HermesHandle;
+
+    #[must_use]
+    pub fn vue_descriptor_script(rt: HermesRuntime, handle: HermesHandle) -> HermesHandle;
+
+    #[must_use]
+    pub fn vue_descriptor_custom_blocks_count(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_descriptor_custom_block_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> HermesHandle;
+
+    #[must_use]
+    pub fn vue_descriptor_css_vars_count(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_descriptor_css_var_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_descriptor_slotted(rt: HermesRuntime, handle: HermesHandle) -> bool;
+
+    #[must_use]
+    pub fn vue_descriptor_source(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_descriptor_filename(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
 
     // ------------------------------------------------------------------------
     // Block Accessors
     // ------------------------------------------------------------------------
 
-    /// Gets the content of a block (template, script, or style).
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid block handle (template, script, or style).
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A pointer to the block's content as a null-terminated UTF-8 string.
-    /// The string is owned by the handle and remains valid until the handle is freed.
-    /// Returns an empty string if the handle is invalid.
     #[must_use]
-    pub fn vue_block_content(handle: RawHandle) -> *const c_char;
+    pub fn vue_block_content(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
 
-    /// Gets the `lang` attribute of a block.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid block handle (template, script, or style).
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A pointer to the lang attribute as a null-terminated UTF-8 string.
-    /// Returns an empty string if no lang attribute is specified or handle is invalid.
-    /// The string is owned by the handle and remains valid until the handle is freed.
     #[must_use]
-    pub fn vue_block_lang(handle: RawHandle) -> *const c_char;
+    pub fn vue_block_lang(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
 
-    /// Checks if a style block has the `scoped` attribute.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid style block handle from [`vue_descriptor_style_at`].
-    /// - Must be called from the main thread.
     #[must_use]
-    pub fn vue_style_is_scoped(handle: RawHandle) -> bool;
+    pub fn vue_style_is_scoped(rt: HermesRuntime, handle: HermesHandle) -> bool;
+
+    #[must_use]
+    pub fn vue_custom_block_type(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
+
+    // ------------------------------------------------------------------------
+    // Block Location Accessors
+    // ------------------------------------------------------------------------
+
+    #[must_use]
+    pub fn vue_block_loc_start_offset(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_block_loc_start_line(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_block_loc_start_column(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_block_loc_end_offset(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_block_loc_end_line(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_block_loc_end_column(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    // ------------------------------------------------------------------------
+    // Block Attribute Accessors
+    // ------------------------------------------------------------------------
+
+    #[must_use]
+    pub fn vue_block_src(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_block_attrs_count(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_block_attrs_key_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_block_attrs_value_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_block_attrs_is_bool_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> bool;
+
+    // ------------------------------------------------------------------------
+    // Script Block Specific Accessors
+    // ------------------------------------------------------------------------
+
+    #[must_use]
+    pub fn vue_script_has_setup(rt: HermesRuntime, handle: HermesHandle) -> bool;
+
+    #[must_use]
+    pub fn vue_script_setup_value(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_script_bindings_count(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_script_bindings_key_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_script_bindings_value_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_script_imports_count(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_script_imports_key_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_script_imports_value_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> HermesHandle;
+
+    #[must_use]
+    pub fn vue_import_binding_is_type(rt: HermesRuntime, handle: HermesHandle) -> bool;
+
+    #[must_use]
+    pub fn vue_import_binding_imported(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_import_binding_source(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_import_binding_is_from_setup(rt: HermesRuntime, handle: HermesHandle) -> bool;
+
+    #[must_use]
+    pub fn vue_script_warnings_count(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_script_warning_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> *const c_char;
+
+    #[must_use]
+    pub fn vue_script_deps_count(rt: HermesRuntime, handle: HermesHandle) -> usize;
+
+    #[must_use]
+    pub fn vue_script_dep_at(
+        rt: HermesRuntime,
+        handle: HermesHandle,
+        index: usize,
+    ) -> *const c_char;
+
+    // ------------------------------------------------------------------------
+    // Style Block Specific Accessors
+    // ------------------------------------------------------------------------
+
+    #[must_use]
+    pub fn vue_style_has_module(rt: HermesRuntime, handle: HermesHandle) -> bool;
+
+    #[must_use]
+    pub fn vue_style_module_value(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
 
     // ------------------------------------------------------------------------
     // Script Compilation
     // ------------------------------------------------------------------------
 
-    /// Compiles the script blocks of an SFC descriptor.
-    ///
-    /// This processes both `<script>` and `<script setup>` blocks, combining them
-    /// into a single compiled output with binding metadata.
-    ///
-    /// # Safety
-    ///
-    /// - `descriptor` must be a valid descriptor handle from [`vue_parse_result_descriptor`].
-    /// - `id` must be a valid UTF-8 byte slice of length `id_len` (scope ID for the component).
-    /// - The pointer must remain valid for the duration of the call.
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A handle to the script compilation result. Must be freed with [`vue_handle_free`].
     #[must_use]
     pub fn vue_compile_script(
-        descriptor: RawHandle,
+        rt: HermesRuntime,
+        descriptor: HermesHandle,
         id: *const c_char,
         id_len: usize,
         is_prod: bool,
-    ) -> RawHandle;
+    ) -> HermesHandle;
 
-    /// Gets the compiled script content.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid script result handle from [`vue_compile_script`].
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A pointer to the compiled JavaScript code as a null-terminated UTF-8 string.
-    /// The string is owned by the handle and remains valid until the handle is freed.
     #[must_use]
-    pub fn vue_script_result_content(handle: RawHandle) -> *const c_char;
+    pub fn vue_script_result_content(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
 
-    /// Gets the bindings handle from a script compilation result.
-    ///
-    /// Bindings contain metadata about variables defined in the script, which is
-    /// used by the template compiler for optimization.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid script result handle from [`vue_compile_script`].
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A handle to the bindings object, or `RawHandle::INVALID` if no bindings exist.
-    /// The returned handle must be freed separately.
     #[must_use]
-    pub fn vue_script_result_bindings(handle: RawHandle) -> RawHandle;
+    pub fn vue_script_result_bindings(rt: HermesRuntime, handle: HermesHandle) -> HermesHandle;
 
     // ------------------------------------------------------------------------
     // Template Compilation
     // ------------------------------------------------------------------------
 
-    /// Compiles a Vue template to a render function.
-    ///
-    /// # Safety
-    ///
-    /// - `source` must be a valid UTF-8 byte slice of length `source_len` containing the template.
-    /// - `filename` must be a valid UTF-8 byte slice of length `filename_len`.
-    /// - `id` must be a valid UTF-8 byte slice of length `id_len` (scope ID).
-    /// - `bindings` may be `RawHandle::INVALID` if no bindings are available.
-    /// - All string pointers must remain valid for the duration of the call.
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A handle to the template compilation result. Must be freed with [`vue_handle_free`].
     #[must_use]
     pub fn vue_compile_template(
+        rt: HermesRuntime,
         source: *const c_char,
         source_len: usize,
         filename: *const c_char,
@@ -388,51 +450,22 @@ extern "C" {
         id: *const c_char,
         id_len: usize,
         scoped: bool,
-        bindings: RawHandle,
-    ) -> RawHandle;
+        bindings: HermesHandle,
+    ) -> HermesHandle;
 
-    /// Gets the compiled template code (render function).
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid template result handle from [`vue_compile_template`].
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A pointer to the compiled render function code as a null-terminated UTF-8 string.
-    /// The string is owned by the handle and remains valid until the handle is freed.
     #[must_use]
-    pub fn vue_template_result_code(handle: RawHandle) -> *const c_char;
+    pub fn vue_template_result_code(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
 
-    /// Gets the number of template compilation errors.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid template result handle from [`vue_compile_template`].
-    /// - Must be called from the main thread.
     #[must_use]
-    pub fn vue_template_result_error_count(handle: RawHandle) -> usize;
+    pub fn vue_template_result_error_count(rt: HermesRuntime, handle: HermesHandle) -> usize;
 
     // ------------------------------------------------------------------------
     // Style Compilation
     // ------------------------------------------------------------------------
 
-    /// Compiles a CSS style block, optionally adding scoped attribute selectors.
-    ///
-    /// # Safety
-    ///
-    /// - `source` must be a valid UTF-8 byte slice of length `source_len` containing CSS.
-    /// - `filename` must be a valid UTF-8 byte slice of length `filename_len`.
-    /// - `id` must be a valid UTF-8 byte slice of length `id_len` (scope ID).
-    /// - All string pointers must remain valid for the duration of the call.
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A handle to the style compilation result. Must be freed with [`vue_handle_free`].
     #[must_use]
     pub fn vue_compile_style(
+        rt: HermesRuntime,
         source: *const c_char,
         source_len: usize,
         filename: *const c_char,
@@ -440,19 +473,8 @@ extern "C" {
         id: *const c_char,
         id_len: usize,
         scoped: bool,
-    ) -> RawHandle;
+    ) -> HermesHandle;
 
-    /// Gets the compiled CSS code.
-    ///
-    /// # Safety
-    ///
-    /// - `handle` must be a valid style result handle from [`vue_compile_style`].
-    /// - Must be called from the main thread.
-    ///
-    /// # Returns
-    ///
-    /// A pointer to the compiled CSS as a null-terminated UTF-8 string.
-    /// The string is owned by the handle and remains valid until the handle is freed.
     #[must_use]
-    pub fn vue_style_result_code(handle: RawHandle) -> *const c_char;
+    pub fn vue_style_result_code(rt: HermesRuntime, handle: HermesHandle) -> *const c_char;
 }

@@ -1,0 +1,137 @@
+---
+source: src/tests/snapshot_tests.rs
+expression: snapshot
+---
+ParseOutputSnapshot {
+    has_errors: false,
+    error_count: 0,
+    errors: [],
+    descriptor: Some(
+        DescriptorSnapshot {
+            filename: "CustomBlocks.vue",
+            source_length: 386,
+            css_vars: [],
+            slotted: false,
+            custom_blocks_count: 3,
+            template: Some(
+                TemplateBlockSnapshot {
+                    content: "\n  <div>{{ $t('greeting') }}</div>\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 10,
+                            line: 1,
+                            column: 11,
+                        },
+                        end: PositionSnapshot {
+                            offset: 45,
+                            line: 3,
+                            column: 1,
+                        },
+                    },
+                    attrs: {},
+                },
+            ),
+            script: None,
+            script_setup: Some(
+                ScriptBlockSnapshot {
+                    content: "\nconst msg = 'Hello'\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 72,
+                            line: 5,
+                            column: 15,
+                        },
+                        end: PositionSnapshot {
+                            offset: 93,
+                            line: 7,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "setup": Bool(
+                            true,
+                        ),
+                    },
+                    is_setup: true,
+                    setup_value: None,
+                    bindings: {},
+                    imports: {},
+                    warnings: [],
+                    deps: [],
+                },
+            ),
+            styles: [],
+            custom_blocks: [
+                CustomBlockSnapshot {
+                    block_type: "i18n",
+                    content: "\n{\n  \"en\": {\n    \"greeting\": \"Hello!\"\n  },\n  \"es\": {\n    \"greeting\": \"Hola!\"\n  }\n}\n",
+                    lang: "json",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 122,
+                            line: 9,
+                            column: 19,
+                        },
+                        end: PositionSnapshot {
+                            offset: 205,
+                            line: 18,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "lang": String(
+                            "json",
+                        ),
+                    },
+                },
+                CustomBlockSnapshot {
+                    block_type: "docs",
+                    content: "\n# MyComponent\n\nThis is the documentation for MyComponent.\n\n## Usage\n\n```vue\n<MyComponent />\n```\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 220,
+                            line: 20,
+                            column: 7,
+                        },
+                        end: PositionSnapshot {
+                            offset: 317,
+                            line: 30,
+                            column: 1,
+                        },
+                    },
+                    attrs: {},
+                },
+                CustomBlockSnapshot {
+                    block_type: "story",
+                    content: "\nDefault story configuration\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 348,
+                            line: 32,
+                            column: 23,
+                        },
+                        end: PositionSnapshot {
+                            offset: 377,
+                            line: 34,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "name": String(
+                            "default",
+                        ),
+                    },
+                },
+            ],
+        },
+    ),
+}

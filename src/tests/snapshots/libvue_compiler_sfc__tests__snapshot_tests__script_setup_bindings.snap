@@ -1,0 +1,71 @@
+---
+source: src/tests/snapshot_tests.rs
+expression: snapshot
+---
+ParseOutputSnapshot {
+    has_errors: false,
+    error_count: 0,
+    errors: [],
+    descriptor: Some(
+        DescriptorSnapshot {
+            filename: "ScriptSetup.vue",
+            source_length: 363,
+            css_vars: [],
+            slotted: false,
+            custom_blocks_count: 0,
+            template: Some(
+                TemplateBlockSnapshot {
+                    content: "\n  <div>{{ count }} - {{ doubled }} - {{ message }}</div>\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 10,
+                            line: 1,
+                            column: 11,
+                        },
+                        end: PositionSnapshot {
+                            offset: 68,
+                            line: 3,
+                            column: 1,
+                        },
+                    },
+                    attrs: {},
+                },
+            ),
+            script: None,
+            script_setup: Some(
+                ScriptBlockSnapshot {
+                    content: "\nimport { ref, computed, reactive } from 'vue'\n\nconst count = ref(0)\nconst doubled = computed(() => count.value * 2)\nconst state = reactive({ message: 'Hello' })\nconst message = 'Static string'\nlet mutable = 1\n\ndefineProps(['title'])\ndefineEmits(['update'])\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 95,
+                            line: 5,
+                            column: 15,
+                        },
+                        end: PositionSnapshot {
+                            offset: 353,
+                            line: 16,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "setup": Bool(
+                            true,
+                        ),
+                    },
+                    is_setup: true,
+                    setup_value: None,
+                    bindings: {},
+                    imports: {},
+                    warnings: [],
+                    deps: [],
+                },
+            ),
+            styles: [],
+            custom_blocks: [],
+        },
+    ),
+}

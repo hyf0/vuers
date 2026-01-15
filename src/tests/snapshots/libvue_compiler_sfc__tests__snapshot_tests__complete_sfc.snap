@@ -1,0 +1,182 @@
+---
+source: src/tests/snapshot_tests.rs
+expression: snapshot
+---
+ParseOutputSnapshot {
+    has_errors: false,
+    error_count: 0,
+    errors: [],
+    descriptor: Some(
+        DescriptorSnapshot {
+            filename: "TestComponent.vue",
+            source_length: 460,
+            css_vars: [
+                "color",
+            ],
+            slotted: false,
+            custom_blocks_count: 1,
+            template: Some(
+                TemplateBlockSnapshot {
+                    content: "\ndiv {{ count }}\n",
+                    lang: "pug",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 21,
+                            line: 1,
+                            column: 22,
+                        },
+                        end: PositionSnapshot {
+                            offset: 38,
+                            line: 3,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "lang": String(
+                            "pug",
+                        ),
+                    },
+                },
+            ),
+            script: Some(
+                ScriptBlockSnapshot {
+                    content: "\nexport default {\n  name: 'TestComponent'\n}\n",
+                    lang: "ts",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 69,
+                            line: 5,
+                            column: 19,
+                        },
+                        end: PositionSnapshot {
+                            offset: 113,
+                            line: 9,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "lang": String(
+                            "ts",
+                        ),
+                    },
+                    is_setup: false,
+                    setup_value: None,
+                    bindings: {},
+                    imports: {},
+                    warnings: [],
+                    deps: [],
+                },
+            ),
+            script_setup: Some(
+                ScriptBlockSnapshot {
+                    content: "\nimport { ref, computed } from 'vue'\nimport type { Ref } from 'vue'\nconst count = ref(0)\nconst double = computed(() => count.value * 2)\n",
+                    lang: "ts",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 148,
+                            line: 11,
+                            column: 25,
+                        },
+                        end: PositionSnapshot {
+                            offset: 284,
+                            line: 16,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "lang": String(
+                            "ts",
+                        ),
+                        "setup": Bool(
+                            true,
+                        ),
+                    },
+                    is_setup: true,
+                    setup_value: None,
+                    bindings: {},
+                    imports: {},
+                    warnings: [],
+                    deps: [],
+                },
+            ),
+            styles: [
+                StyleBlockSnapshot {
+                    content: "\ndiv { color: v-bind(color); }\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 309,
+                            line: 18,
+                            column: 15,
+                        },
+                        end: PositionSnapshot {
+                            offset: 340,
+                            line: 20,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "scoped": Bool(
+                            true,
+                        ),
+                    },
+                    is_scoped: true,
+                    has_module: false,
+                    module_name: None,
+                },
+                StyleBlockSnapshot {
+                    content: "\n.container { display: flex; }\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 373,
+                            line: 22,
+                            column: 24,
+                        },
+                        end: PositionSnapshot {
+                            offset: 404,
+                            line: 24,
+                            column: 1,
+                        },
+                    },
+                    attrs: {
+                        "module": String(
+                            "styles",
+                        ),
+                    },
+                    is_scoped: false,
+                    has_module: true,
+                    module_name: Some(
+                        "styles",
+                    ),
+                },
+            ],
+            custom_blocks: [
+                CustomBlockSnapshot {
+                    block_type: "i18n",
+                    content: "\n{ \"en\": { \"hello\": \"Hello\" } }\n",
+                    lang: "",
+                    src: None,
+                    loc: SourceLocationSnapshot {
+                        start: PositionSnapshot {
+                            offset: 420,
+                            line: 26,
+                            column: 7,
+                        },
+                        end: PositionSnapshot {
+                            offset: 452,
+                            line: 28,
+                            column: 1,
+                        },
+                    },
+                    attrs: {},
+                },
+            ],
+        },
+    ),
+}
