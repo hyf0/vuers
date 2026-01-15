@@ -1,6 +1,6 @@
+use libvue_compiler_sfc::Compiler;
 use std::fs;
 use std::time::Instant;
-use libvue_compiler_sfc::Compiler;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let source = fs::read_to_string("examples/fixtures/App.vue")?;
@@ -32,12 +32,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Total: {:?}", duration);
     println!("Per operation: {:?}", per_op);
-    println!("Throughput: {:.0} ops/sec", ITERATIONS as f64 / duration.as_secs_f64());
+    println!(
+        "Throughput: {:.0} ops/sec",
+        ITERATIONS as f64 / duration.as_secs_f64()
+    );
 
     Ok(())
 }
 
-fn compile(compiler: &Compiler, source: &str, filename: &str, scope_id: &str) -> Result<(String, String), Box<dyn std::error::Error>> {
+fn compile(
+    compiler: &Compiler,
+    source: &str,
+    filename: &str,
+    scope_id: &str,
+) -> Result<(String, String), Box<dyn std::error::Error>> {
     let parsed = compiler.parse(source, filename)?;
     let desc = parsed.descriptor().ok_or("No descriptor")?;
     let script_result = desc.compile_script(scope_id, false)?;
@@ -57,12 +65,8 @@ fn compile(compiler: &Compiler, source: &str, filename: &str, scope_id: &str) ->
 
     let mut css_parts = Vec::new();
     for style in desc.styles() {
-        let result = compiler.compile_style(
-            style.content(),
-            filename,
-            scope_id,
-            style.is_scoped(),
-        )?;
+        let result =
+            compiler.compile_style(style.content(), filename, scope_id, style.is_scoped())?;
         css_parts.push(result.code().to_string());
     }
 

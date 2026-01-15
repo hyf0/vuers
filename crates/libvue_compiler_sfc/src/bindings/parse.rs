@@ -2,14 +2,14 @@
 
 use std::os::raw::c_char;
 
-use crate::ffi::{self, HermesHandle};
-use super::handle::Handle;
+use super::blocks::{ScriptBlock, StyleBlock, TemplateBlock};
+use super::compile::ScriptOutput;
 use super::compiler::Compiler;
 use super::error::{Error, Result};
-use super::util::ptr_to_str;
-use super::blocks::{TemplateBlock, ScriptBlock, StyleBlock};
+use super::handle::Handle;
 use super::types::CustomBlock;
-use super::compile::ScriptOutput;
+use super::util::ptr_to_str;
+use crate::ffi::{self, HermesHandle};
 
 /// Output of parsing an SFC source file.
 pub struct ParseOutput<'c>(Handle<'c>);
@@ -22,9 +22,8 @@ impl<'c> ParseOutput<'c> {
 
     /// Get the SFC descriptor containing all parsed blocks.
     pub fn descriptor(&self) -> Option<Descriptor<'c>> {
-        let handle = unsafe {
-            ffi::vue_parse_result_descriptor(self.0.compiler().runtime, self.0.raw())
-        };
+        let handle =
+            unsafe { ffi::vue_parse_result_descriptor(self.0.compiler().runtime, self.0.raw()) };
         Handle::new(handle, self.0.compiler()).map(Descriptor)
     }
 
@@ -84,9 +83,8 @@ impl<'c> Descriptor<'c> {
         if !self.has_template() {
             return None;
         }
-        let handle = unsafe {
-            ffi::vue_descriptor_template(self.0.compiler().runtime, self.0.raw())
-        };
+        let handle =
+            unsafe { ffi::vue_descriptor_template(self.0.compiler().runtime, self.0.raw()) };
         Handle::new(handle, self.0.compiler()).map(TemplateBlock)
     }
 
@@ -95,9 +93,7 @@ impl<'c> Descriptor<'c> {
         if !self.has_script() {
             return None;
         }
-        let handle = unsafe {
-            ffi::vue_descriptor_script(self.0.compiler().runtime, self.0.raw())
-        };
+        let handle = unsafe { ffi::vue_descriptor_script(self.0.compiler().runtime, self.0.raw()) };
         Handle::new(handle, self.0.compiler()).map(ScriptBlock)
     }
 
@@ -106,9 +102,8 @@ impl<'c> Descriptor<'c> {
         if !self.has_script_setup() {
             return None;
         }
-        let handle = unsafe {
-            ffi::vue_descriptor_script_setup(self.0.compiler().runtime, self.0.raw())
-        };
+        let handle =
+            unsafe { ffi::vue_descriptor_script_setup(self.0.compiler().runtime, self.0.raw()) };
         Handle::new(handle, self.0.compiler()).map(ScriptBlock)
     }
 
@@ -131,14 +126,20 @@ impl<'c> Descriptor<'c> {
     /// Get the original source code of the SFC.
     pub fn source(&self) -> &str {
         unsafe {
-            ptr_to_str(ffi::vue_descriptor_source(self.0.compiler().runtime, self.0.raw()))
+            ptr_to_str(ffi::vue_descriptor_source(
+                self.0.compiler().runtime,
+                self.0.raw(),
+            ))
         }
     }
 
     /// Get the filename of the SFC.
     pub fn filename(&self) -> &str {
         unsafe {
-            ptr_to_str(ffi::vue_descriptor_filename(self.0.compiler().runtime, self.0.raw()))
+            ptr_to_str(ffi::vue_descriptor_filename(
+                self.0.compiler().runtime,
+                self.0.raw(),
+            ))
         }
     }
 

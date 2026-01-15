@@ -50,7 +50,11 @@ fn compilersfc_should_ignore_other_nodes_with_no_content() {
     let result = compiler.parse(source, "test.vue").unwrap();
     let _desc = result.descriptor().unwrap();
 
-    assert!(!result.has_errors(), "Parse errors: {:?}", result.errors().collect::<Vec<_>>());
+    assert!(
+        !result.has_errors(),
+        "Parse errors: {:?}",
+        result.errors().collect::<Vec<_>>()
+    );
 }
 
 /// Local: vue/packages/compiler-sfc/__tests__/parse.spec.ts:231
@@ -67,7 +71,9 @@ fn compilersfc_handle_empty_nodes_with_src_attribute() {
 
     assert!(desc.script().is_some());
     assert!(desc.script().unwrap().content().is_empty());
-    assert!(matches!(desc.script().unwrap().attrs().get("src"), Some(crate::AttrValue::String(s)) if s == r#"com"#));
+    assert!(
+        matches!(desc.script().unwrap().attrs().get("src"), Some(crate::AttrValue::String(s)) if s == r#"com"#)
+    );
 }
 
 /// Local: vue/packages/compiler-sfc/__tests__/parse.spec.ts:238
@@ -120,7 +126,11 @@ fn compilersfc_div_lang_should_not_be_treated_as_plain_text() {
     let result = compiler.parse(source, "test.vue").unwrap();
     let _desc = result.descriptor().unwrap();
 
-    assert!(!result.has_errors(), "Parse errors: {:?}", result.errors().collect::<Vec<_>>());
+    assert!(
+        !result.has_errors(),
+        "Parse errors: {:?}",
+        result.errors().collect::<Vec<_>>()
+    );
 }
 
 /// Local: vue/packages/compiler-sfc/__tests__/parse.spec.ts:305
@@ -135,7 +145,11 @@ fn compilersfc_slotted_detection() {
     let result = compiler.parse(source, "test.vue").unwrap();
     let _desc = result.descriptor().unwrap();
 
-    assert!(!result.has_errors(), "Parse errors: {:?}", result.errors().collect::<Vec<_>>());
+    assert!(
+        !result.has_errors(),
+        "Parse errors: {:?}",
+        result.errors().collect::<Vec<_>>()
+    );
 }
 
 /// Local: vue/packages/compiler-sfc/__tests__/parse.spec.ts:323
@@ -165,7 +179,11 @@ fn compilersfc_should_parse_as_dom_by_default() {
     let result = compiler.parse(source, "test.vue").unwrap();
     let _desc = result.descriptor().unwrap();
 
-    assert!(!result.has_errors(), "Parse errors: {:?}", result.errors().collect::<Vec<_>>());
+    assert!(
+        !result.has_errors(),
+        "Parse errors: {:?}",
+        result.errors().collect::<Vec<_>>()
+    );
 }
 
 /// Local: vue/packages/compiler-sfc/__tests__/parse.spec.ts:333
@@ -182,7 +200,11 @@ fn compilersfc_custom_compiler() {
 
     // Note: This test expects parse errors in the original Vue tests due to custom compiler,
     // but we don't have custom compiler support, so we just check it parses successfully.
-    assert!(!result.has_errors(), "Parse errors: {:?}", result.errors().collect::<Vec<_>>());
+    assert!(
+        !result.has_errors(),
+        "Parse errors: {:?}",
+        result.errors().collect::<Vec<_>>()
+    );
 }
 
 /// Local: vue/packages/compiler-sfc/__tests__/parse.spec.ts:350
@@ -212,7 +234,11 @@ fn compilersfc_should_accept_parser_options() {
     let result = compiler.parse(source, "test.vue").unwrap();
     let _desc = result.descriptor().unwrap();
 
-    assert!(!result.has_errors(), "Parse errors: {:?}", result.errors().collect::<Vec<_>>());
+    assert!(
+        !result.has_errors(),
+        "Parse errors: {:?}",
+        result.errors().collect::<Vec<_>>()
+    );
 }
 
 /// Local: vue/packages/compiler-sfc/__tests__/parse.spec.ts:389
@@ -272,7 +298,11 @@ fn compilersfc_warnings_should_not_warn_script_script_setup() {
     let result = compiler.parse(source, "test.vue").unwrap();
     let _desc = result.descriptor().unwrap();
 
-    assert!(!result.has_errors(), "Parse errors: {:?}", result.errors().collect::<Vec<_>>());
+    assert!(
+        !result.has_errors(),
+        "Parse errors: {:?}",
+        result.errors().collect::<Vec<_>>()
+    );
 }
 
 /// Local: vue/packages/compiler-sfc/__tests__/parse.spec.ts:422

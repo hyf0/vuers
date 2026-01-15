@@ -3,10 +3,10 @@
 //! Each `Compiler` owns its own Hermes runtime and can be used independently.
 //! This enables thread-safe parallel compilation by creating one Compiler per thread.
 
-use crate::ffi::{self, HermesRuntime, HermesHandle};
+use super::compile::{ScriptOutput, StyleOutput, TemplateOutput};
 use super::error::{Error, Result};
 use super::parse::ParseOutput;
-use super::compile::{ScriptOutput, TemplateOutput, StyleOutput};
+use crate::ffi::{self, HermesHandle, HermesRuntime};
 
 /// Vue SFC compiler instance.
 ///

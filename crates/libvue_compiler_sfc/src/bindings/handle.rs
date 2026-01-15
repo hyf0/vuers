@@ -1,8 +1,8 @@
 //! Opaque handle type for JavaScript objects.
 
-use std::num::NonZeroU64;
-use crate::ffi::{self, HermesHandle};
 use super::compiler::Compiler;
+use crate::ffi::{self, HermesHandle};
+use std::num::NonZeroU64;
 
 /// Opaque handle to a JavaScript object.
 ///
@@ -37,8 +37,6 @@ impl<'c> Handle<'c> {
 
 impl Drop for Handle<'_> {
     fn drop(&mut self) {
-        unsafe {
-            ffi::hermes_handle_free(self.compiler.runtime, HermesHandle(self.raw.get()))
-        }
+        unsafe { ffi::hermes_handle_free(self.compiler.runtime, HermesHandle(self.raw.get())) }
     }
 }

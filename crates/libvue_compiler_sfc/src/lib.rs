@@ -65,14 +65,25 @@ mod tests;
 
 // Re-export bindings API as the primary API
 pub use bindings::{
+    AttrValue,
     // Core types
-    Compiler, Error, Result,
+    Compiler,
+    CustomBlock,
+    Descriptor,
+    Error,
+    ImportBinding,
     // Parse
-    ParseOutput, Descriptor,
-    // Blocks
-    TemplateBlock, ScriptBlock, StyleBlock, CustomBlock,
+    ParseOutput,
+    Position,
+    Result,
+    ScriptBlock,
     // Compile outputs
-    ScriptOutput, TemplateOutput, StyleOutput,
+    ScriptOutput,
     // Common types
-    SourceLocation, Position, AttrValue, ImportBinding,
+    SourceLocation,
+    StyleBlock,
+    StyleOutput,
+    // Blocks
+    TemplateBlock,
+    TemplateOutput,
 };

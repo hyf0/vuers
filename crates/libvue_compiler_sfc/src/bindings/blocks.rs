@@ -2,12 +2,10 @@
 
 use std::collections::HashMap;
 
-use crate::ffi::{self, HermesHandle, HermesRuntime};
 use super::handle::Handle;
+use super::types::{AttrValue, ImportBinding, SourceLocation};
 use super::util::ptr_to_str;
-use super::types::{
-    SourceLocation, AttrValue, ImportBinding,
-};
+use crate::ffi::{self, HermesHandle, HermesRuntime};
 
 /// Template block from an SFC.
 pub struct TemplateBlock<'c>(pub(crate) Handle<'c>);
@@ -15,7 +13,12 @@ pub struct TemplateBlock<'c>(pub(crate) Handle<'c>);
 impl TemplateBlock<'_> {
     /// Get the template content.
     pub fn content(&self) -> &str {
-        unsafe { ptr_to_str(ffi::vue_block_content(self.0.compiler().runtime, self.0.raw())) }
+        unsafe {
+            ptr_to_str(ffi::vue_block_content(
+                self.0.compiler().runtime,
+                self.0.raw(),
+            ))
+        }
     }
 
     /// Get the template language (e.g., "pug").
@@ -26,7 +29,11 @@ impl TemplateBlock<'_> {
     /// Get the src attribute if present (external file reference).
     pub fn src(&self) -> Option<&str> {
         let s = unsafe { ptr_to_str(ffi::vue_block_src(self.0.compiler().runtime, self.0.raw())) };
-        if s.is_empty() { None } else { Some(s) }
+        if s.is_empty() {
+            None
+        } else {
+            Some(s)
+        }
     }
 
     /// Get the source location of the block.
@@ -46,7 +53,12 @@ pub struct ScriptBlock<'c>(pub(crate) Handle<'c>);
 impl ScriptBlock<'_> {
     /// Get the script content.
     pub fn content(&self) -> &str {
-        unsafe { ptr_to_str(ffi::vue_block_content(self.0.compiler().runtime, self.0.raw())) }
+        unsafe {
+            ptr_to_str(ffi::vue_block_content(
+                self.0.compiler().runtime,
+                self.0.raw(),
+            ))
+        }
     }
 
     /// Get the script language (e.g., "ts").
@@ -57,7 +69,11 @@ impl ScriptBlock<'_> {
     /// Get the src attribute if present (external file reference).
     pub fn src(&self) -> Option<&str> {
         let s = unsafe { ptr_to_str(ffi::vue_block_src(self.0.compiler().runtime, self.0.raw())) };
-        if s.is_empty() { None } else { Some(s) }
+        if s.is_empty() {
+            None
+        } else {
+            Some(s)
+        }
     }
 
     /// Get the source location of the block.
@@ -81,8 +97,17 @@ impl ScriptBlock<'_> {
         if !self.is_setup() {
             return None;
         }
-        let s = unsafe { ptr_to_str(ffi::vue_script_setup_value(self.0.compiler().runtime, self.0.raw())) };
-        if s.is_empty() { None } else { Some(s) }
+        let s = unsafe {
+            ptr_to_str(ffi::vue_script_setup_value(
+                self.0.compiler().runtime,
+                self.0.raw(),
+            ))
+        };
+        if s.is_empty() {
+            None
+        } else {
+            Some(s)
+        }
     }
 
     /// Get the number of bindings in the script block.
@@ -100,10 +125,20 @@ impl ScriptBlock<'_> {
 
         for i in 0..count {
             let key = unsafe {
-                ptr_to_str(ffi::vue_script_bindings_key_at(self.0.compiler().runtime, self.0.raw(), i)).to_string()
+                ptr_to_str(ffi::vue_script_bindings_key_at(
+                    self.0.compiler().runtime,
+                    self.0.raw(),
+                    i,
+                ))
+                .to_string()
             };
             let value = unsafe {
-                ptr_to_str(ffi::vue_script_bindings_value_at(self.0.compiler().runtime, self.0.raw(), i)).to_string()
+                ptr_to_str(ffi::vue_script_bindings_value_at(
+                    self.0.compiler().runtime,
+                    self.0.raw(),
+                    i,
+                ))
+                .to_string()
             };
             bindings.insert(key, value);
         }
@@ -132,15 +167,11 @@ impl ScriptBlock<'_> {
             if handle.is_valid() {
                 // Extract data directly from the handle
                 let is_type = unsafe { ffi::vue_import_binding_is_type(rt, handle) };
-                let imported = unsafe {
-                    ptr_to_str(ffi::vue_import_binding_imported(rt, handle)).to_string()
-                };
-                let source = unsafe {
-                    ptr_to_str(ffi::vue_import_binding_source(rt, handle)).to_string()
-                };
-                let is_from_setup = unsafe {
-                    ffi::vue_import_binding_is_from_setup(rt, handle)
-                };
+                let imported =
+                    unsafe { ptr_to_str(ffi::vue_import_binding_imported(rt, handle)).to_string() };
+                let source =
+                    unsafe { ptr_to_str(ffi::vue_import_binding_source(rt, handle)).to_string() };
+                let is_from_setup = unsafe { ffi::vue_import_binding_is_from_setup(rt, handle) };
 
                 let binding = ImportBinding {
                     is_type,
@@ -170,7 +201,12 @@ impl ScriptBlock<'_> {
 
         for i in 0..count {
             let warning = unsafe {
-                ptr_to_str(ffi::vue_script_warning_at(self.0.compiler().runtime, self.0.raw(), i)).to_string()
+                ptr_to_str(ffi::vue_script_warning_at(
+                    self.0.compiler().runtime,
+                    self.0.raw(),
+                    i,
+                ))
+                .to_string()
             };
             warnings.push(warning);
         }
@@ -190,7 +226,12 @@ impl ScriptBlock<'_> {
 
         for i in 0..count {
             let dep = unsafe {
-                ptr_to_str(ffi::vue_script_dep_at(self.0.compiler().runtime, self.0.raw(), i)).to_string()
+                ptr_to_str(ffi::vue_script_dep_at(
+                    self.0.compiler().runtime,
+                    self.0.raw(),
+                    i,
+                ))
+                .to_string()
             };
             deps.push(dep);
         }
@@ -205,7 +246,12 @@ pub struct StyleBlock<'c>(pub(crate) Handle<'c>);
 impl StyleBlock<'_> {
     /// Get the style content.
     pub fn content(&self) -> &str {
-        unsafe { ptr_to_str(ffi::vue_block_content(self.0.compiler().runtime, self.0.raw())) }
+        unsafe {
+            ptr_to_str(ffi::vue_block_content(
+                self.0.compiler().runtime,
+                self.0.raw(),
+            ))
+        }
     }
 
     /// Get the style language (e.g., "scss").
@@ -221,7 +267,11 @@ impl StyleBlock<'_> {
     /// Get the src attribute if present (external file reference).
     pub fn src(&self) -> Option<&str> {
         let s = unsafe { ptr_to_str(ffi::vue_block_src(self.0.compiler().runtime, self.0.raw())) };
-        if s.is_empty() { None } else { Some(s) }
+        if s.is_empty() {
+            None
+        } else {
+            Some(s)
+        }
     }
 
     /// Get the source location of the block.
@@ -245,8 +295,17 @@ impl StyleBlock<'_> {
         if !self.has_module() {
             return None;
         }
-        let s = unsafe { ptr_to_str(ffi::vue_style_module_value(self.0.compiler().runtime, self.0.raw())) };
-        if s.is_empty() { None } else { Some(s) }
+        let s = unsafe {
+            ptr_to_str(ffi::vue_style_module_value(
+                self.0.compiler().runtime,
+                self.0.raw(),
+            ))
+        };
+        if s.is_empty() {
+            None
+        } else {
+            Some(s)
+        }
     }
 }
 

@@ -37,8 +37,11 @@ fn main() {
     let vue_compiler_js = dist_dir.join("vue-compiler.js");
     let shermes_status = Command::new(&shermes)
         .args([
-            "-O", "-c", "-exported-unit=vue_compiler",
-            "-o", vue_compiler_o.to_str().unwrap(),
+            "-O",
+            "-c",
+            "-exported-unit=vue_compiler",
+            "-o",
+            vue_compiler_o.to_str().unwrap(),
             vue_compiler_js.to_str().unwrap(),
         ])
         .status()
@@ -65,10 +68,24 @@ fn main() {
     println!("cargo:rustc-link-arg={}", vue_compiler_o.display());
 
     // Link Hermes libraries
-    println!("cargo:rustc-link-search={}", hermes_build.join("lib").display());
-    println!("cargo:rustc-link-search={}", hermes_build.join("jsi").display());
-    println!("cargo:rustc-link-search={}", hermes_build.join("tools/shermes").display());
-    println!("cargo:rustc-link-search={}", hermes_build.join("external/boost/boost_1_86_0/libs/context").display());
+    println!(
+        "cargo:rustc-link-search={}",
+        hermes_build.join("lib").display()
+    );
+    println!(
+        "cargo:rustc-link-search={}",
+        hermes_build.join("jsi").display()
+    );
+    println!(
+        "cargo:rustc-link-search={}",
+        hermes_build.join("tools/shermes").display()
+    );
+    println!(
+        "cargo:rustc-link-search={}",
+        hermes_build
+            .join("external/boost/boost_1_86_0/libs/context")
+            .display()
+    );
 
     // Link required libraries in order
     println!("cargo:rustc-link-lib=static=shermes_console_a");
@@ -81,12 +98,38 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=Foundation");
 
     // Rerun if sources change
-    println!("cargo:rerun-if-changed={}", manifest_dir.join("ffi/cpp/runtime.h").display());
-    println!("cargo:rerun-if-changed={}", manifest_dir.join("ffi/cpp/runtime.cpp").display());
-    println!("cargo:rerun-if-changed={}", manifest_dir.join("ffi/cpp/runtime_internal.h").display());
-    println!("cargo:rerun-if-changed={}", manifest_dir.join("ffi/cpp/vue_sfc.h").display());
-    println!("cargo:rerun-if-changed={}", manifest_dir.join("ffi/cpp/vue_sfc.cpp").display());
-    println!("cargo:rerun-if-changed={}", manifest_dir.join("ffi/js/vue_compiler_sfc_bridge.js").display());
-    println!("cargo:rerun-if-changed={}", tools_dir.join("bundle.ts").display());
-    println!("cargo:rerun-if-changed={}", tools_dir.join("package.json").display());
+    println!(
+        "cargo:rerun-if-changed={}",
+        manifest_dir.join("ffi/cpp/runtime.h").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        manifest_dir.join("ffi/cpp/runtime.cpp").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        manifest_dir.join("ffi/cpp/runtime_internal.h").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        manifest_dir.join("ffi/cpp/vue_sfc.h").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        manifest_dir.join("ffi/cpp/vue_sfc.cpp").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        manifest_dir
+            .join("ffi/js/vue_compiler_sfc_bridge.js")
+            .display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        tools_dir.join("bundle.ts").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        tools_dir.join("package.json").display()
+    );
 }

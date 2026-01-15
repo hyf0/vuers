@@ -42,12 +42,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let desc = parsed.descriptor().ok_or("No descriptor")?;
     println!("   - template: {}", desc.has_template());
     println!("   - script_setup: {}", desc.has_script_setup());
-    println!("   - styles: {} (scoped: {})", desc.style_count(), desc.has_scoped_style());
+    println!(
+        "   - styles: {} (scoped: {})",
+        desc.style_count(),
+        desc.has_scoped_style()
+    );
 
     // 2. Compile script
     println!("\n2. Compiling script...");
     let script_result = desc.compile_script(&scope_id, false)?;
-    println!("   - content length: {} bytes", script_result.content().len());
+    println!(
+        "   - content length: {} bytes",
+        script_result.content().len()
+    );
 
     // 3. Compile template
     println!("\n3. Compiling template...");
@@ -70,13 +77,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n4. Compiling styles...");
     let mut css_parts = Vec::new();
     for (i, style) in desc.styles().enumerate() {
-        let result = compiler.compile_style(
-            style.content(),
-            filename,
-            &scope_id,
-            style.is_scoped(),
-        )?;
-        println!("   - style[{}]: {} bytes, scoped={}", i, result.code().len(), style.is_scoped());
+        let result =
+            compiler.compile_style(style.content(), filename, &scope_id, style.is_scoped())?;
+        println!(
+            "   - style[{}]: {} bytes, scoped={}",
+            i,
+            result.code().len(),
+            style.is_scoped()
+        );
         css_parts.push(result.code().to_string());
     }
 
@@ -119,5 +127,6 @@ export default __default__
 }
 
 fn hash(s: &str) -> u32 {
-    s.bytes().fold(0u32, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u32))
+    s.bytes()
+        .fold(0u32, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u32))
 }

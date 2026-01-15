@@ -8,7 +8,7 @@
 
 use std::collections::BTreeMap;
 
-use crate::{Compiler, AttrValue, ImportBinding, Position, SourceLocation};
+use crate::{AttrValue, Compiler, ImportBinding, Position, SourceLocation};
 
 /// Serializable struct for Position (for deterministic output)
 #[derive(Debug)]
@@ -158,10 +158,7 @@ struct ParseOutputSnapshot {
 fn to_btree_attrs(
     attrs: std::collections::HashMap<String, AttrValue>,
 ) -> BTreeMap<String, AttrValueSnapshot> {
-    attrs
-        .into_iter()
-        .map(|(k, v)| (k, v.into()))
-        .collect()
+    attrs.into_iter().map(|(k, v)| (k, v.into())).collect()
 }
 
 fn to_btree_bindings(
@@ -173,10 +170,7 @@ fn to_btree_bindings(
 fn to_btree_imports(
     imports: std::collections::HashMap<String, ImportBinding>,
 ) -> BTreeMap<String, ImportBindingSnapshot> {
-    imports
-        .into_iter()
-        .map(|(k, v)| (k, v.into()))
-        .collect()
+    imports.into_iter().map(|(k, v)| (k, v.into())).collect()
 }
 
 /// Test parsing a complete SFC with all block types
@@ -213,7 +207,9 @@ div { color: v-bind(color); }
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "TestComponent.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "TestComponent.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("complete_sfc", snapshot);
@@ -228,7 +224,9 @@ fn test_minimal_template_only() {
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "Minimal.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "Minimal.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("minimal_template_only", snapshot);
@@ -256,7 +254,9 @@ defineEmits(['update'])
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "ScriptSetup.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "ScriptSetup.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("script_setup_bindings", snapshot);
@@ -271,7 +271,9 @@ fn test_external_src_attributes() {
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "External.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "External.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("external_src_attributes", snapshot);
@@ -312,7 +314,9 @@ $primary: #42b883;
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "MultiStyle.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "MultiStyle.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("multiple_styles", snapshot);
@@ -342,7 +346,9 @@ const fontSize = '16px'
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "VBind.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "VBind.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("css_v_bind_variables", snapshot);
@@ -373,7 +379,9 @@ fn test_slotted_styles() {
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "Slotted.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "Slotted.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("slotted_styles", snapshot);
@@ -419,7 +427,9 @@ Default story configuration
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "CustomBlocks.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "CustomBlocks.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("custom_blocks", snapshot);
@@ -442,7 +452,9 @@ const value: Ref<number> = ref(42)
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "TypeImports.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "TypeImports.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("type_imports", snapshot);
@@ -470,7 +482,9 @@ const count = ref(0)
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "DualScript.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "DualScript.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("dual_scripts", snapshot);
@@ -485,7 +499,9 @@ fn test_empty_blocks() {
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "Empty.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "Empty.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("empty_blocks", snapshot);
@@ -508,7 +524,9 @@ export default {}
 "#;
 
     let compiler = Compiler::new().expect("Compiler should initialize");
-    let result = compiler.parse(source, "Attributes.vue").expect("Parse should succeed");
+    let result = compiler
+        .parse(source, "Attributes.vue")
+        .expect("Parse should succeed");
 
     let snapshot = build_parse_output_snapshot(&result);
     insta::assert_debug_snapshot!("attribute_formats", snapshot);

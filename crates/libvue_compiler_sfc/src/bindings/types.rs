@@ -2,9 +2,9 @@
 
 use std::collections::HashMap;
 
-use crate::ffi::{self, HermesHandle, HermesRuntime};
 use super::handle::Handle;
 use super::util::ptr_to_str;
+use crate::ffi::{self, HermesHandle, HermesRuntime};
 
 /// Source position in the SFC file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,12 +54,22 @@ pub struct CustomBlock<'c>(pub(crate) Handle<'c>);
 impl CustomBlock<'_> {
     /// Get the block type (e.g., "i18n", "docs").
     pub fn block_type(&self) -> &str {
-        unsafe { ptr_to_str(ffi::vue_custom_block_type(self.0.compiler().runtime, self.0.raw())) }
+        unsafe {
+            ptr_to_str(ffi::vue_custom_block_type(
+                self.0.compiler().runtime,
+                self.0.raw(),
+            ))
+        }
     }
 
     /// Get the block content.
     pub fn content(&self) -> &str {
-        unsafe { ptr_to_str(ffi::vue_block_content(self.0.compiler().runtime, self.0.raw())) }
+        unsafe {
+            ptr_to_str(ffi::vue_block_content(
+                self.0.compiler().runtime,
+                self.0.raw(),
+            ))
+        }
     }
 
     /// Get the block language.
@@ -70,7 +80,11 @@ impl CustomBlock<'_> {
     /// Get the src attribute if present.
     pub fn src(&self) -> Option<&str> {
         let s = unsafe { ptr_to_str(ffi::vue_block_src(self.0.compiler().runtime, self.0.raw())) };
-        if s.is_empty() { None } else { Some(s) }
+        if s.is_empty() {
+            None
+        } else {
+            Some(s)
+        }
     }
 
     /// Get the source location of the block.
@@ -112,7 +126,8 @@ fn get_block_attrs(rt: HermesRuntime, handle: HermesHandle) -> HashMap<String, A
         let value = if is_bool {
             AttrValue::Bool(true)
         } else {
-            let val = unsafe { ptr_to_str(ffi::vue_block_attrs_value_at(rt, handle, i)).to_string() };
+            let val =
+                unsafe { ptr_to_str(ffi::vue_block_attrs_value_at(rt, handle, i)).to_string() };
             AttrValue::String(val)
         };
 

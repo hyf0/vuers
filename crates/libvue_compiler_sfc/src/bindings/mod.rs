@@ -27,18 +27,18 @@
 //! To compile in parallel, create multiple `Compiler` instances - each
 //! owns its own Hermes runtime.
 
-mod compiler;
-mod handle;
-mod error;
-mod util;
-mod types;
-mod parse;
 mod blocks;
 mod compile;
+mod compiler;
+mod error;
+mod handle;
+mod parse;
+mod types;
+mod util;
 
+pub use blocks::{ScriptBlock, StyleBlock, TemplateBlock};
+pub use compile::{ScriptOutput, StyleOutput, TemplateOutput};
 pub use compiler::Compiler;
 pub use error::{Error, Result};
-pub use parse::{ParseOutput, Descriptor};
-pub use blocks::{TemplateBlock, ScriptBlock, StyleBlock};
-pub use types::{SourceLocation, Position, AttrValue, ImportBinding, CustomBlock};
-pub use compile::{ScriptOutput, TemplateOutput, StyleOutput};
+pub use parse::{Descriptor, ParseOutput};
+pub use types::{AttrValue, CustomBlock, ImportBinding, Position, SourceLocation};
