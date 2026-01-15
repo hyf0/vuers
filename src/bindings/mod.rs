@@ -6,17 +6,17 @@
 //! # Example
 //!
 //! ```ignore
-//! use libvue_compiler_sfc::{ParseResult, compile_template, compile_style};
+//! use libvue_compiler_sfc::{parse, compile_script, compile_template, compile_style};
 //!
-//! let parsed = ParseResult::parse(&source, "App.vue")?;
+//! let parsed = parse(&source, "App.vue")?;
 //! let desc = parsed.descriptor()?;
-//! let script = desc.compile_script("scope-id", false)?;
+//! let script = compile_script(&desc, "scope-id", false)?;
 //! let template = compile_template(
 //!     desc.template()?.content(),
 //!     "App.vue",
 //!     "scope-id",
 //!     true,
-//!     script.bindings().as_ref(),
+//!     Some(&script),
 //! )?;
 //! ```
 
@@ -27,11 +27,10 @@ mod parse;
 mod blocks;
 mod compile;
 
-pub use handle::Handle;
 pub use error::{Error, Result};
-pub use parse::{ParseResult, Descriptor};
+pub use parse::{parse, compile_script, ParseOutput, Descriptor};
 pub use blocks::{TemplateBlock, ScriptBlock, StyleBlock};
 pub use compile::{
-    ScriptResult, TemplateResult, StyleResult, Bindings,
+    ScriptOutput, TemplateOutput, StyleOutput,
     compile_template, compile_style,
 };

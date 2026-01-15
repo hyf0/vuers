@@ -2,7 +2,19 @@
 
 /// Error type for binding operations.
 #[derive(Debug)]
-pub struct Error(pub String);
+pub struct Error(String);
+
+impl Error {
+    /// Create a new error with the given message.
+    pub(crate) fn new(message: impl Into<String>) -> Self {
+        Error(message.into())
+    }
+
+    /// Get the error message.
+    pub fn message(&self) -> &str {
+        &self.0
+    }
+}
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

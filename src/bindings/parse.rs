@@ -7,28 +7,43 @@ use super::handle::Handle;
 use super::error::{Error, Result};
 use super::util::ptr_to_str;
 use super::blocks::{TemplateBlock, ScriptBlock, StyleBlock};
-use super::compile::ScriptResult;
+use super::compile::ScriptOutput;
 
-/// Result of parsing an SFC source file.
-pub struct ParseResult(Handle);
+/// Parse an SFC source string.
+pub fn parse(source: &str, filename: &str) -> Result<ParseOutput> {
+    let handle = unsafe {
+        ffi::vue_parse(
+            source.as_ptr() as *const c_char,
+            source.len(),
+            filename.as_ptr() as *const c_char,
+            filename.len(),
+        )
+    };
 
-impl ParseResult {
-    /// Parse an SFC source string.
-    pub fn parse(source: &str, filename: &str) -> Result<Self> {
-        let handle = unsafe {
-            ffi::vue_parse(
-                source.as_ptr() as *const c_char,
-                source.len(),
-                filename.as_ptr() as *const c_char,
-                filename.len(),
-            )
-        };
+    Handle::new(handle)
+        .map(ParseOutput)
+        .ok_or_else(|| Error::new("Parse returned invalid handle"))
+}
 
-        Handle::new(handle)
-            .map(ParseResult)
-            .ok_or_else(|| Error("Parse returned invalid handle".into()))
-    }
+/// Compile the script blocks from a descriptor.
+pub fn compile_script(descriptor: &Descriptor, id: &str, is_prod: bool) -> Result<ScriptOutput> {
+    let handle = unsafe {
+        ffi::vue_compile_script(
+            descriptor.0.raw(),
+            id.as_ptr() as *const c_char,
+            id.len(),
+            is_prod,
+        )
+    };
+    Handle::new(handle)
+        .map(ScriptOutput::from_handle)
+        .ok_or_else(|| Error::new("compile_script returned invalid handle"))
+}
 
+/// Output of parsing an SFC source file.
+pub struct ParseOutput(Handle);
+
+impl ParseOutput {
     /// Get the SFC descriptor containing all parsed blocks.
     pub fn descriptor(&self) -> Option<Descriptor> {
         let handle = unsafe { ffi::vue_parse_result_descriptor(self.0.raw()) };
@@ -45,9 +60,9 @@ impl ParseResult {
         unsafe { ptr_to_str(ffi::vue_parse_result_error_message(self.0.raw(), index)) }
     }
 
-    /// Check if parsing succeeded without errors.
-    pub fn is_ok(&self) -> bool {
-        self.error_count() == 0 && self.descriptor().is_some()
+    /// Check if parsing produced errors.
+    pub fn has_errors(&self) -> bool {
+        self.error_count() > 0 || self.descriptor().is_none()
     }
 
     /// Iterate over all error messages.
@@ -98,37 +113,17 @@ impl Descriptor {
         Handle::new(handle).map(ScriptBlock)
     }
 
-    /// Get a style block by index.
-    pub fn style_at(&self, index: usize) -> Option<StyleBlock> {
-        if index >= self.style_count() {
-            return None;
-        }
-        let handle = unsafe { ffi::vue_descriptor_style_at(self.0.raw(), index) };
-        Handle::new(handle).map(StyleBlock)
-    }
-
     /// Iterate over all style blocks.
     pub fn styles(&self) -> impl Iterator<Item = StyleBlock> + '_ {
-        (0..self.style_count()).filter_map(move |i| self.style_at(i))
+        let count = self.style_count();
+        (0..count).filter_map(move |index| {
+            let handle = unsafe { ffi::vue_descriptor_style_at(self.0.raw(), index) };
+            Handle::new(handle).map(StyleBlock)
+        })
     }
 
     /// Check if any style block is scoped.
     pub fn has_scoped_style(&self) -> bool {
         self.styles().any(|s| s.is_scoped())
-    }
-
-    /// Compile the script blocks.
-    pub fn compile_script(&self, id: &str, is_prod: bool) -> Result<ScriptResult> {
-        let handle = unsafe {
-            ffi::vue_compile_script(
-                self.0.raw(),
-                id.as_ptr() as *const c_char,
-                id.len(),
-                is_prod,
-            )
-        };
-        Handle::new(handle)
-            .map(ScriptResult::from_handle)
-            .ok_or_else(|| Error("compile_script returned invalid handle".into()))
     }
 }

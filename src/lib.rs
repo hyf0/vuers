@@ -13,14 +13,14 @@
 //! # Example
 //!
 //! ```no_run
-//! use libvue_compiler_sfc::{ParseResult, compile_template, compile_style};
+//! use libvue_compiler_sfc::{parse, compile_script, compile_template, compile_style};
 //!
 //! fn compile(source: &str) -> Result<(String, String), Box<dyn std::error::Error>> {
-//!     let parsed = ParseResult::parse(source, "App.vue")?;
+//!     let parsed = parse(source, "App.vue")?;
 //!     let desc = parsed.descriptor().ok_or("No descriptor")?;
 //!
 //!     // Compile script
-//!     let script = desc.compile_script("scope-id", false)?;
+//!     let script = compile_script(&desc, "scope-id", false)?;
 //!
 //!     // Compile template with bindings from script
 //!     let template = compile_template(
@@ -28,7 +28,7 @@
 //!         "App.vue",
 //!         "scope-id",
 //!         desc.has_scoped_style(),
-//!         script.bindings().as_ref(),
+//!         Some(&script),
 //!     )?;
 //!
 //!     // Compile styles
@@ -47,21 +47,21 @@
 //! ```
 
 // Layer 1: Raw FFI (unsafe, extern "C")
-pub mod ffi;
+mod ffi;
 
 // Layer 2: Safe Rust bindings (recommended)
-pub mod bindings;
+mod bindings;
 
 // Re-export bindings API as the primary API
 pub use bindings::{
     // Core types
-    Handle, Error, Result,
+    Error, Result,
     // Parse
-    ParseResult, Descriptor,
+    parse, compile_script, ParseOutput, Descriptor,
     // Blocks
     TemplateBlock, ScriptBlock, StyleBlock,
-    // Compile results
-    ScriptResult, TemplateResult, StyleResult, Bindings,
+    // Compile outputs
+    ScriptOutput, TemplateOutput, StyleOutput,
     // Compile functions
     compile_template, compile_style,
 };

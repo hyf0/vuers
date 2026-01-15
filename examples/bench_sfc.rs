@@ -1,6 +1,6 @@
 use std::fs;
 use std::time::Instant;
-use libvue_compiler_sfc::bindings::{self, ParseResult};
+use libvue_compiler_sfc::{parse, compile_script, compile_template, compile_style};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let source = fs::read_to_string("examples/fixtures/App.vue")?;
@@ -26,7 +26,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let duration = start.elapsed();
     let per_op = duration / ITERATIONS as u32;
-    
+
     println!("Total: {:?}", duration);
     println!("Per operation: {:?}", per_op);
     println!("Throughput: {:.0} ops/sec", ITERATIONS as f64 / duration.as_secs_f64());
@@ -35,18 +35,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn compile(source: &str, filename: &str, scope_id: &str) -> Result<(String, String), Box<dyn std::error::Error>> {
-    let parsed = ParseResult::parse(source, filename)?;
+    let parsed = parse(source, filename)?;
     let desc = parsed.descriptor().ok_or("No descriptor")?;
-    let script_result = desc.compile_script(scope_id, false)?;
-    let bindings = script_result.bindings();
+    let script_result = compile_script(&desc, scope_id, false)?;
 
     let template_code = if let Some(tmpl) = desc.template() {
-        let result = bindings::compile_template(
+        let result = compile_template(
             tmpl.content(),
             filename,
             scope_id,
             desc.has_scoped_style(),
-            bindings.as_ref(),
+            Some(&script_result),
         )?;
         result.code().to_string()
     } else {
@@ -55,7 +54,7 @@ fn compile(source: &str, filename: &str, scope_id: &str) -> Result<(String, Stri
 
     let mut css_parts = Vec::new();
     for style in desc.styles() {
-        let result = bindings::compile_style(
+        let result = compile_style(
             style.content(),
             filename,
             scope_id,

@@ -7,24 +7,12 @@ use super::handle::Handle;
 use super::error::{Error, Result};
 use super::util::ptr_to_str;
 
-/// Binding metadata from script compilation.
-///
-/// Used to optimize template compilation by providing type information
-/// about variables defined in the script.
-pub struct Bindings(Handle);
+/// Output of compiling script blocks.
+pub struct ScriptOutput(Handle);
 
-impl Bindings {
-    pub(crate) fn raw(&self) -> ffi::RawHandle {
-        self.0.raw()
-    }
-}
-
-/// Result of compiling script blocks.
-pub struct ScriptResult(Handle);
-
-impl ScriptResult {
+impl ScriptOutput {
     pub(crate) fn from_handle(handle: Handle) -> Self {
-        ScriptResult(handle)
+        ScriptOutput(handle)
     }
 
     /// Get the compiled script content.
@@ -32,17 +20,16 @@ impl ScriptResult {
         unsafe { ptr_to_str(ffi::vue_script_result_content(self.0.raw())) }
     }
 
-    /// Get the binding metadata for template optimization.
-    pub fn bindings(&self) -> Option<Bindings> {
-        let handle = unsafe { ffi::vue_script_result_bindings(self.0.raw()) };
-        Handle::new(handle).map(Bindings)
+    /// Get the internal bindings handle for template compilation.
+    pub(crate) fn bindings_handle(&self) -> ffi::RawHandle {
+        unsafe { ffi::vue_script_result_bindings(self.0.raw()) }
     }
 }
 
-/// Result of compiling a template.
-pub struct TemplateResult(Handle);
+/// Output of compiling a template.
+pub struct TemplateOutput(Handle);
 
-impl TemplateResult {
+impl TemplateOutput {
     /// Get the compiled render function code.
     pub fn code(&self) -> &str {
         unsafe { ptr_to_str(ffi::vue_template_result_code(self.0.raw())) }
@@ -53,16 +40,16 @@ impl TemplateResult {
         unsafe { ffi::vue_template_result_error_count(self.0.raw()) }
     }
 
-    /// Check if compilation succeeded.
-    pub fn is_ok(&self) -> bool {
-        self.error_count() == 0
+    /// Check if compilation produced errors.
+    pub fn has_errors(&self) -> bool {
+        self.error_count() > 0
     }
 }
 
-/// Result of compiling a style block.
-pub struct StyleResult(Handle);
+/// Output of compiling a style block.
+pub struct StyleOutput(Handle);
 
-impl StyleResult {
+impl StyleOutput {
     /// Get the compiled CSS.
     pub fn code(&self) -> &str {
         unsafe { ptr_to_str(ffi::vue_style_result_code(self.0.raw())) }
@@ -76,15 +63,15 @@ impl StyleResult {
 /// * `filename` - Source filename for error messages
 /// * `id` - Scope ID for scoped styles
 /// * `scoped` - Whether to add scoped style attributes
-/// * `bindings` - Optional binding metadata from script compilation
+/// * `script` - Optional script output for binding metadata
 pub fn compile_template(
     source: &str,
     filename: &str,
     id: &str,
     scoped: bool,
-    bindings: Option<&Bindings>,
-) -> Result<TemplateResult> {
-    let bindings_handle = bindings.map(|b| b.raw()).unwrap_or(ffi::RawHandle::INVALID);
+    script: Option<&ScriptOutput>,
+) -> Result<TemplateOutput> {
+    let bindings_handle = script.map(|s| s.bindings_handle()).unwrap_or(ffi::RawHandle::INVALID);
 
     let handle = unsafe {
         ffi::vue_compile_template(
@@ -100,8 +87,8 @@ pub fn compile_template(
     };
 
     Handle::new(handle)
-        .map(TemplateResult)
-        .ok_or_else(|| Error("compile_template returned invalid handle".into()))
+        .map(TemplateOutput)
+        .ok_or_else(|| Error::new("compile_template returned invalid handle"))
 }
 
 /// Compile a style block.
@@ -116,7 +103,7 @@ pub fn compile_style(
     filename: &str,
     id: &str,
     scoped: bool,
-) -> Result<StyleResult> {
+) -> Result<StyleOutput> {
     let handle = unsafe {
         ffi::vue_compile_style(
             source.as_ptr() as *const c_char,
@@ -130,6 +117,6 @@ pub fn compile_style(
     };
 
     Handle::new(handle)
-        .map(StyleResult)
-        .ok_or_else(|| Error("compile_style returned invalid handle".into()))
+        .map(StyleOutput)
+        .ok_or_else(|| Error::new("compile_style returned invalid handle"))
 }
