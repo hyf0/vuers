@@ -1,6 +1,6 @@
 //! Compilation result types and functions.
 
-use std::ffi::CString;
+use std::os::raw::c_char;
 
 use crate::ffi;
 use super::handle::Handle;
@@ -84,16 +84,16 @@ pub fn compile_template(
     scoped: bool,
     bindings: Option<&Bindings>,
 ) -> Result<TemplateResult> {
-    let source_c = CString::new(source)?;
-    let filename_c = CString::new(filename)?;
-    let id_c = CString::new(id)?;
     let bindings_handle = bindings.map(|b| b.raw()).unwrap_or(ffi::RawHandle::INVALID);
 
     let handle = unsafe {
         ffi::vue_compile_template(
-            source_c.as_ptr(),
-            filename_c.as_ptr(),
-            id_c.as_ptr(),
+            source.as_ptr() as *const c_char,
+            source.len(),
+            filename.as_ptr() as *const c_char,
+            filename.len(),
+            id.as_ptr() as *const c_char,
+            id.len(),
             scoped,
             bindings_handle,
         )
@@ -117,15 +117,14 @@ pub fn compile_style(
     id: &str,
     scoped: bool,
 ) -> Result<StyleResult> {
-    let source_c = CString::new(source)?;
-    let filename_c = CString::new(filename)?;
-    let id_c = CString::new(id)?;
-
     let handle = unsafe {
         ffi::vue_compile_style(
-            source_c.as_ptr(),
-            filename_c.as_ptr(),
-            id_c.as_ptr(),
+            source.as_ptr() as *const c_char,
+            source.len(),
+            filename.as_ptr() as *const c_char,
+            filename.len(),
+            id.as_ptr() as *const c_char,
+            id.len(),
             scoped,
         )
     };

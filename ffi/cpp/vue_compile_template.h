@@ -30,18 +30,21 @@ extern "C" {
 /**
  * Compiles a Vue template to a render function.
  *
- * @param source Null-terminated template source string.
- * @param filename Null-terminated filename string.
- * @param id Null-terminated scope ID string (e.g., "data-v-abc123").
+ * @param source Template source string (not null-terminated).
+ * @param source_len Length of the source string in bytes.
+ * @param filename Filename string (not null-terminated).
+ * @param filename_len Length of the filename string in bytes.
+ * @param id Scope ID string (not null-terminated, e.g., "data-v-abc123").
+ * @param id_len Length of the id string in bytes.
  * @param scoped Whether to add scoped attribute selectors.
  * @param bindings_handle Handle to bindings object from vue_script_result_bindings(),
  *                        or 0 for none.
  * @return Handle to the compilation result.
  */
 RawHandle vue_compile_template(
-    const char* source,
-    const char* filename,
-    const char* id,
+    const char* source, size_t source_len,
+    const char* filename, size_t filename_len,
+    const char* id, size_t id_len,
     bool scoped,
     RawHandle bindings_handle
 );

@@ -32,11 +32,15 @@ extern "C" {
  * Compiles the script blocks of an SFC.
  *
  * @param desc_handle Handle to the SFC descriptor.
- * @param id Null-terminated scope ID string (e.g., "data-v-abc123").
+ * @param id Scope ID string (not null-terminated, e.g., "data-v-abc123").
+ * @param id_len Length of the id string in bytes.
  * @param is_prod Whether to compile for production.
  * @return Handle to the compilation result.
  */
-RawHandle vue_compile_script(RawHandle desc_handle, const char* id, bool is_prod);
+RawHandle vue_compile_script(
+    RawHandle desc_handle,
+    const char* id, size_t id_len,
+    bool is_prod);
 
 /**
  * Gets the compiled script content.

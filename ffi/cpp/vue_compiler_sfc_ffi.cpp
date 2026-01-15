@@ -244,16 +244,23 @@ extern "C" void vue_handle_free(uint64_t handle) {
 /**
  * Parses a Vue SFC source string.
  *
- * @param source Null-terminated UTF-8 string containing the SFC source.
- * @param filename Null-terminated UTF-8 string with the filename (for errors).
+ * @param source UTF-8 string containing the SFC source (not null-terminated).
+ * @param source_len Length of the source string in bytes.
+ * @param filename UTF-8 string with the filename (not null-terminated).
+ * @param filename_len Length of the filename string in bytes.
  * @return Handle to the parse result object.
  */
-extern "C" uint64_t vue_parse(const char* source, const char* filename) {
+extern "C" uint64_t vue_parse(
+    const char* source, size_t source_len,
+    const char* filename, size_t filename_len
+) {
     init_runtime();
     auto& rt = *s_hermes;
 
-    auto jsSource = facebook::jsi::String::createFromUtf8(rt, source);
-    auto jsFilename = facebook::jsi::String::createFromUtf8(rt, filename);
+    auto jsSource = facebook::jsi::String::createFromUtf8(
+        rt, reinterpret_cast<const uint8_t*>(source), source_len);
+    auto jsFilename = facebook::jsi::String::createFromUtf8(
+        rt, reinterpret_cast<const uint8_t*>(filename), filename_len);
     auto result = s_parseFn->call(rt, jsSource, jsFilename);
 
     return allocate_handle(std::move(result));
@@ -520,11 +527,16 @@ extern "C" bool vue_style_is_scoped(uint64_t handle) {
  * Compiles the script blocks of an SFC.
  *
  * @param desc_handle Handle to the SFC descriptor.
- * @param id Null-terminated scope ID string.
+ * @param id Scope ID string (not null-terminated).
+ * @param id_len Length of the id string in bytes.
  * @param is_prod Whether to compile for production.
  * @return Handle to the compilation result.
  */
-extern "C" uint64_t vue_compile_script(uint64_t desc_handle, const char* id, bool is_prod) {
+extern "C" uint64_t vue_compile_script(
+    uint64_t desc_handle,
+    const char* id, size_t id_len,
+    bool is_prod
+) {
     init_runtime();
 
     auto* entry = get_handle(desc_handle);
@@ -533,7 +545,8 @@ extern "C" uint64_t vue_compile_script(uint64_t desc_handle, const char* id, boo
     }
 
     auto& rt = *s_hermes;
-    auto jsId = facebook::jsi::String::createFromUtf8(rt, id);
+    auto jsId = facebook::jsi::String::createFromUtf8(
+        rt, reinterpret_cast<const uint8_t*>(id), id_len);
     auto result = s_compileScriptFn->call(rt, *entry->value, jsId, is_prod);
 
     return allocate_handle(std::move(result));
@@ -586,26 +599,32 @@ extern "C" uint64_t vue_script_result_bindings(uint64_t handle) {
 /**
  * Compiles a Vue template to a render function.
  *
- * @param source Null-terminated template source string.
- * @param filename Null-terminated filename string.
- * @param id Null-terminated scope ID string.
+ * @param source Template source string (not null-terminated).
+ * @param source_len Length of the source string in bytes.
+ * @param filename Filename string (not null-terminated).
+ * @param filename_len Length of the filename string in bytes.
+ * @param id Scope ID string (not null-terminated).
+ * @param id_len Length of the id string in bytes.
  * @param scoped Whether to add scoped attribute selectors.
  * @param bindings_handle Handle to bindings object, or 0 for none.
  * @return Handle to the compilation result.
  */
 extern "C" uint64_t vue_compile_template(
-    const char* source,
-    const char* filename,
-    const char* id,
+    const char* source, size_t source_len,
+    const char* filename, size_t filename_len,
+    const char* id, size_t id_len,
     bool scoped,
     uint64_t bindings_handle
 ) {
     init_runtime();
     auto& rt = *s_hermes;
 
-    auto jsSource = facebook::jsi::String::createFromUtf8(rt, source);
-    auto jsFilename = facebook::jsi::String::createFromUtf8(rt, filename);
-    auto jsId = facebook::jsi::String::createFromUtf8(rt, id);
+    auto jsSource = facebook::jsi::String::createFromUtf8(
+        rt, reinterpret_cast<const uint8_t*>(source), source_len);
+    auto jsFilename = facebook::jsi::String::createFromUtf8(
+        rt, reinterpret_cast<const uint8_t*>(filename), filename_len);
+    auto jsId = facebook::jsi::String::createFromUtf8(
+        rt, reinterpret_cast<const uint8_t*>(id), id_len);
 
     // Handle optional bindings parameter
     facebook::jsi::Value jsBindings = facebook::jsi::Value::null();
@@ -667,24 +686,30 @@ extern "C" size_t vue_template_result_error_count(uint64_t handle) {
 /**
  * Compiles a CSS style block.
  *
- * @param source Null-terminated CSS source string.
- * @param filename Null-terminated filename string.
- * @param id Null-terminated scope ID string.
+ * @param source CSS source string (not null-terminated).
+ * @param source_len Length of the source string in bytes.
+ * @param filename Filename string (not null-terminated).
+ * @param filename_len Length of the filename string in bytes.
+ * @param id Scope ID string (not null-terminated).
+ * @param id_len Length of the id string in bytes.
  * @param scoped Whether to add scoped attribute selectors.
  * @return Handle to the compilation result.
  */
 extern "C" uint64_t vue_compile_style(
-    const char* source,
-    const char* filename,
-    const char* id,
+    const char* source, size_t source_len,
+    const char* filename, size_t filename_len,
+    const char* id, size_t id_len,
     bool scoped
 ) {
     init_runtime();
     auto& rt = *s_hermes;
 
-    auto jsSource = facebook::jsi::String::createFromUtf8(rt, source);
-    auto jsFilename = facebook::jsi::String::createFromUtf8(rt, filename);
-    auto jsId = facebook::jsi::String::createFromUtf8(rt, id);
+    auto jsSource = facebook::jsi::String::createFromUtf8(
+        rt, reinterpret_cast<const uint8_t*>(source), source_len);
+    auto jsFilename = facebook::jsi::String::createFromUtf8(
+        rt, reinterpret_cast<const uint8_t*>(filename), filename_len);
+    auto jsId = facebook::jsi::String::createFromUtf8(
+        rt, reinterpret_cast<const uint8_t*>(id), id_len);
 
     auto result = s_compileStyleFn->call(rt, jsSource, jsFilename, jsId, scoped);
     return allocate_handle(std::move(result));

@@ -32,16 +32,19 @@ extern "C" {
 /**
  * Compiles a CSS style block.
  *
- * @param source Null-terminated CSS source string.
- * @param filename Null-terminated filename string.
- * @param id Null-terminated scope ID string (e.g., "data-v-abc123").
+ * @param source CSS source string (not null-terminated).
+ * @param source_len Length of the source string in bytes.
+ * @param filename Filename string (not null-terminated).
+ * @param filename_len Length of the filename string in bytes.
+ * @param id Scope ID string (not null-terminated, e.g., "data-v-abc123").
+ * @param id_len Length of the id string in bytes.
  * @param scoped Whether to add scoped attribute selectors.
  * @return Handle to the compilation result.
  */
 RawHandle vue_compile_style(
-    const char* source,
-    const char* filename,
-    const char* id,
+    const char* source, size_t source_len,
+    const char* filename, size_t filename_len,
+    const char* id, size_t id_len,
     bool scoped
 );
 

@@ -1,6 +1,6 @@
 //! Parse result and descriptor types.
 
-use std::ffi::CString;
+use std::os::raw::c_char;
 
 use crate::ffi;
 use super::handle::Handle;
@@ -15,11 +15,13 @@ pub struct ParseResult(Handle);
 impl ParseResult {
     /// Parse an SFC source string.
     pub fn parse(source: &str, filename: &str) -> Result<Self> {
-        let source_c = CString::new(source)?;
-        let filename_c = CString::new(filename)?;
-
         let handle = unsafe {
-            ffi::vue_parse(source_c.as_ptr(), filename_c.as_ptr())
+            ffi::vue_parse(
+                source.as_ptr() as *const c_char,
+                source.len(),
+                filename.as_ptr() as *const c_char,
+                filename.len(),
+            )
         };
 
         Handle::new(handle)
@@ -117,9 +119,13 @@ impl Descriptor {
 
     /// Compile the script blocks.
     pub fn compile_script(&self, id: &str, is_prod: bool) -> Result<ScriptResult> {
-        let id_c = CString::new(id)?;
         let handle = unsafe {
-            ffi::vue_compile_script(self.0.raw(), id_c.as_ptr(), is_prod)
+            ffi::vue_compile_script(
+                self.0.raw(),
+                id.as_ptr() as *const c_char,
+                id.len(),
+                is_prod,
+            )
         };
         Handle::new(handle)
             .map(ScriptResult::from_handle)

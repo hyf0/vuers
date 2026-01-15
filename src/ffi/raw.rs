@@ -119,8 +119,8 @@ extern "C" {
     ///
     /// # Safety
     ///
-    /// - `source` must be a valid, null-terminated UTF-8 string.
-    /// - `filename` must be a valid, null-terminated UTF-8 string.
+    /// - `source` must be a valid UTF-8 byte slice of length `source_len`.
+    /// - `filename` must be a valid UTF-8 byte slice of length `filename_len`.
     /// - Both pointers must remain valid for the duration of the call.
     /// - Must be called from the main thread.
     ///
@@ -129,7 +129,12 @@ extern "C" {
     /// A valid handle on success. The handle must be freed with [`vue_handle_free`].
     /// Even if parsing fails, a valid handle is returned containing error information.
     #[must_use]
-    pub fn vue_parse(source: *const c_char, filename: *const c_char) -> RawHandle;
+    pub fn vue_parse(
+        source: *const c_char,
+        source_len: usize,
+        filename: *const c_char,
+        filename_len: usize,
+    ) -> RawHandle;
 
     /// Gets the descriptor handle from a parse result.
     ///
@@ -310,8 +315,8 @@ extern "C" {
     /// # Safety
     ///
     /// - `descriptor` must be a valid descriptor handle from [`vue_parse_result_descriptor`].
-    /// - `id` must be a valid, null-terminated UTF-8 string (scope ID for the component).
-    /// - Both pointers must remain valid for the duration of the call.
+    /// - `id` must be a valid UTF-8 byte slice of length `id_len` (scope ID for the component).
+    /// - The pointer must remain valid for the duration of the call.
     /// - Must be called from the main thread.
     ///
     /// # Returns
@@ -321,6 +326,7 @@ extern "C" {
     pub fn vue_compile_script(
         descriptor: RawHandle,
         id: *const c_char,
+        id_len: usize,
         is_prod: bool,
     ) -> RawHandle;
 
@@ -363,9 +369,9 @@ extern "C" {
     ///
     /// # Safety
     ///
-    /// - `source` must be a valid, null-terminated UTF-8 string containing the template.
-    /// - `filename` must be a valid, null-terminated UTF-8 string.
-    /// - `id` must be a valid, null-terminated UTF-8 string (scope ID).
+    /// - `source` must be a valid UTF-8 byte slice of length `source_len` containing the template.
+    /// - `filename` must be a valid UTF-8 byte slice of length `filename_len`.
+    /// - `id` must be a valid UTF-8 byte slice of length `id_len` (scope ID).
     /// - `bindings` may be `RawHandle::INVALID` if no bindings are available.
     /// - All string pointers must remain valid for the duration of the call.
     /// - Must be called from the main thread.
@@ -376,8 +382,11 @@ extern "C" {
     #[must_use]
     pub fn vue_compile_template(
         source: *const c_char,
+        source_len: usize,
         filename: *const c_char,
+        filename_len: usize,
         id: *const c_char,
+        id_len: usize,
         scoped: bool,
         bindings: RawHandle,
     ) -> RawHandle;
@@ -413,9 +422,9 @@ extern "C" {
     ///
     /// # Safety
     ///
-    /// - `source` must be a valid, null-terminated UTF-8 string containing CSS.
-    /// - `filename` must be a valid, null-terminated UTF-8 string.
-    /// - `id` must be a valid, null-terminated UTF-8 string (scope ID).
+    /// - `source` must be a valid UTF-8 byte slice of length `source_len` containing CSS.
+    /// - `filename` must be a valid UTF-8 byte slice of length `filename_len`.
+    /// - `id` must be a valid UTF-8 byte slice of length `id_len` (scope ID).
     /// - All string pointers must remain valid for the duration of the call.
     /// - Must be called from the main thread.
     ///
@@ -425,8 +434,11 @@ extern "C" {
     #[must_use]
     pub fn vue_compile_style(
         source: *const c_char,
+        source_len: usize,
         filename: *const c_char,
+        filename_len: usize,
         id: *const c_char,
+        id_len: usize,
         scoped: bool,
     ) -> RawHandle;
 

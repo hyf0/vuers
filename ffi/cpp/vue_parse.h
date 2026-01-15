@@ -30,11 +30,15 @@ extern "C" {
 /**
  * Parses a Vue SFC source string.
  *
- * @param source Null-terminated UTF-8 string containing the SFC source.
- * @param filename Null-terminated UTF-8 string with the filename (for errors).
+ * @param source UTF-8 string containing the SFC source (not null-terminated).
+ * @param source_len Length of the source string in bytes.
+ * @param filename UTF-8 string with the filename (not null-terminated).
+ * @param filename_len Length of the filename string in bytes.
  * @return Handle to the parse result object.
  */
-RawHandle vue_parse(const char* source, const char* filename);
+RawHandle vue_parse(
+    const char* source, size_t source_len,
+    const char* filename, size_t filename_len);
 
 /**
  * Gets the descriptor handle from a parse result.

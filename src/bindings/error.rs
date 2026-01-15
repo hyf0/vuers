@@ -12,11 +12,5 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-impl From<std::ffi::NulError> for Error {
-    fn from(e: std::ffi::NulError) -> Self {
-        Error(e.to_string())
-    }
-}
-
 /// Result type alias for binding operations.
 pub type Result<T> = std::result::Result<T, Error>;
