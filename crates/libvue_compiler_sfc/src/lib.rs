@@ -56,34 +56,19 @@
 // Layer 1: Raw FFI (unsafe, extern "C") - re-exported from sys crate
 pub use lib_vue_compiler_sfc_sys as ffi;
 
-// Layer 2: Safe Rust bindings (recommended)
-mod bindings;
+// Layer 2: Safe Rust types and compiler
+mod compiler;
+pub(crate) mod types;
+mod util;
 
 // Tests
 #[cfg(test)]
 mod tests;
 
-// Re-export bindings API as the primary API
-pub use bindings::{
-    AttrValue,
-    // Core types
-    Compiler,
-    CustomBlock,
-    Descriptor,
-    Error,
-    ImportBinding,
-    // Parse
-    ParseOutput,
-    Position,
-    Result,
-    ScriptBlock,
-    // Compile outputs
-    ScriptOutput,
-    // Common types
-    SourceLocation,
-    StyleBlock,
-    StyleOutput,
-    // Blocks
-    TemplateBlock,
+// Re-export public API
+pub use compiler::Compiler;
+pub use types::{
+    AttrValue, CustomBlock, Descriptor, Error, ImportBinding, ParseOutput, Position, Result,
+    ScriptBlock, ScriptOutput, SourceLocation, StyleBlock, StyleOutput, TemplateBlock,
     TemplateOutput,
 };

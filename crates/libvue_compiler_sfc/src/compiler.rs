@@ -3,10 +3,8 @@
 //! Each `Compiler` owns its own Hermes runtime and can be used independently.
 //! This enables thread-safe parallel compilation by creating one Compiler per thread.
 
-use super::compile::{ScriptOutput, StyleOutput, TemplateOutput};
-use super::error::{Error, Result};
-use super::parse::ParseOutput;
 use crate::ffi::{self, HermesHandle, HermesRuntime};
+use crate::types::{Error, ParseOutput, Result, ScriptOutput, StyleOutput, TemplateOutput};
 
 /// Vue SFC compiler instance.
 ///
@@ -84,7 +82,7 @@ impl Compiler {
             return Err(Error::new("Parse returned invalid handle"));
         }
 
-        Ok(ParseOutput::from_raw(handle, self))
+        Ok(ParseOutput::from_raw(handle, &self.runtime))
     }
 
     /// Compiles a Vue template to a render function.
@@ -128,7 +126,7 @@ impl Compiler {
             return Err(Error::new("compile_template returned invalid handle"));
         }
 
-        Ok(TemplateOutput::from_raw(handle, self))
+        Ok(TemplateOutput::from_raw(handle, &self.runtime))
     }
 
     /// Compiles a CSS style block.
@@ -165,7 +163,7 @@ impl Compiler {
             return Err(Error::new("compile_style returned invalid handle"));
         }
 
-        Ok(StyleOutput::from_raw(handle, self))
+        Ok(StyleOutput::from_raw(handle, &self.runtime))
     }
 }
 
@@ -175,12 +173,7 @@ impl Drop for Compiler {
     }
 }
 
-// Compiler is Send but NOT Sync
-// It can be moved to another thread, but can't be shared between threads
+// Compiler is Send but NOT Sync.
+// - Send: can be moved to another thread
+// - !Sync: cannot be shared across threads (HermesRuntime is a raw pointer, which is !Sync)
 unsafe impl Send for Compiler {}
-
-// Explicitly NOT implementing Sync:
-// impl !Sync for Compiler {}
-// Note: Rust doesn't have negative trait impls yet, but since Compiler
-// contains a raw handle (u64), it would normally be Sync. We rely on
-// documentation and the design to prevent misuse.
