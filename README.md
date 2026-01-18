@@ -66,11 +66,15 @@ See [CLAUDE.md](./CLAUDE.md) for detailed architecture documentation.
 ## API
 
 ```rust
-use libvue_compiler_sfc::compile_template;
+use libvue_compiler_sfc::Compiler;
 
 fn main() {
-    let code = compile_template("<div>{{ msg }}</div>").unwrap();
-    println!("{}", code);
+    let compiler = Compiler::new().expect("Failed to create compiler");
+    // compile_template(source, filename, scope_id, is_scoped, script_bindings)
+    let result = compiler
+        .compile_template("<div>{{ msg }}</div>", "App.vue", "scope-id", false, None)
+        .unwrap();
+    println!("{}", result.code());
 }
 ```
 
